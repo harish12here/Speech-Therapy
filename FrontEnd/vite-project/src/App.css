@@ -1,0 +1,27 @@
+
+/* Settings Animations */
+@keyframes bounceIn {
+  0% { transform: translate(-50%, -100px); opacity: 0; }
+  70% { transform: translate(-50%, 10px); }
+  100% { transform: translate(-50%, 0); opacity: 1; }
+}
+
+.animate-bounce-in {
+  animation: bounceIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* Print Styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
