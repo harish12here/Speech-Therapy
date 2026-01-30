@@ -1,4 +1,4 @@
-
+#backend\src\services\speech_analyzer.py
 import json
 from typing import Dict, List, Tuple
 import random
@@ -16,29 +16,28 @@ except ImportError as e:
     print(f"⚠️ AI Libraries missing: {e}. Using Mock Analysis.")
     HAS_AI_LIBS = False
 
+from src.models.wav2vec2_model import get_wav2vec2_model
+
 class SpeechAnalyzer:
     def __init__(self):
         self.sample_rate = 16000
-        self.wav2vec_model = None
-        self.wav2vec_processor = None
-        self.phoneme_model = None
+        self.model_wrapper = None
         
     def ensure_models_loaded(self):
-        if HAS_AI_LIBS and self.wav2vec_model is None:
+        if HAS_AI_LIBS and self.model_wrapper is None:
             self.load_models()
 
     def load_models(self):
-        """Load Wav2Vec2 and phoneme classification models"""
+        """Load the accurate Wav2Vec2 model via the model utility"""
         if not HAS_AI_LIBS:
             return
             
         try:
-            self.wav2vec_processor = Wav2Vec2Processor.from_pretrained("facebook/wav2vec2-base-960h")
-            self.wav2vec_model = Wav2Vec2ForCTC.from_pretrained("facebook/wav2vec2-base-960h")
-            print("✅ Wav2Vec2 model loaded")
+            self.model_wrapper = get_wav2vec2_model()
+            print("✅ Accurate Wav2Vec2 model loaded")
         except Exception as e:
             print(f"⚠️  Could not load Wav2Vec2: {e}")
-            self.wav2vec_model = None
+            self.model_wrapper = None
     
     def analyze_audio(self, audio_path: str, reference_text: str) -> Dict:
         """
@@ -50,35 +49,41 @@ class SpeechAnalyzer:
 
         self.ensure_models_loaded()
         try:
-            # Load and preprocess audio
-            # Librosa uses float32 normalized
+            # 1. New Accurate Analysis using the Model Wrapper
+            language = "tamil" if any(ord(c) > 127 for c in reference_text) else "english"
+            analysis = self.model_wrapper.analyze_pronunciation(audio_path, reference_text, language=language)
+            
+            transcription = analysis["transcription"]
+            pronunciation_score = analysis["overall_score"]
+            phoneme_reports = analysis["phoneme_reports"]
+            
+            # Load audio for other analyses
             audio, sr = librosa.load(audio_path, sr=self.sample_rate)
             
-            # Feature extraction
-            features = self.extract_features(audio)
-            
-            # Get Wav2Vec2 embeddings & Transcription
-            transcription, confidence = self.transcribe_audio(audio)
-            
-            # Phoneme analysis (using transcription similarity as proxy for correct pronunciation)
-            phoneme_scores = self.analyze_phonemes_real(transcription, reference_text, confidence)
-            
-            # Pitch analysis
+            # 2. Pitch analysis
             pitch_results = self.analyze_pitch(audio)
             
-            # Fluency analysis
+            # 3. Fluency analysis
             fluency_score = self.analyze_fluency(audio)
             
-            # Calculate overall score
-            overall_score = self.calculate_overall_score(
-                phoneme_scores, 
-                pitch_results, 
-                fluency_score
-            )
+            # 4. Feature extraction
+            features = self.model_wrapper.extract_features(audio)
             
+            # Map phoneme reports to the format expected by the frontend
+            phoneme_scores = {}
+            for report in phoneme_reports:
+                char = report["expected"]
+                if char not in phoneme_scores:
+                    phoneme_scores[char] = {"score": report["score"] * 100, "status": report["status"]}
+            
+            # Calculate final overall score (blend of pronunciation, pitch, and fluency)
+            # Pronunciation is weighted most heavily (60%)
+            final_score = (pronunciation_score * 0.6) + (pitch_results['score'] * 0.15) + (fluency_score * 0.25)
+            final_score = int(min(100, final_score))
+
             # Generate feedback
             feedback = self.generate_feedback(
-                overall_score,
+                final_score,
                 phoneme_scores,
                 pitch_results,
                 fluency_score
@@ -86,17 +91,18 @@ class SpeechAnalyzer:
             
             return {
                 "success": True,
-                "pronunciation_score": overall_score,
-                "phoneme_scores": phoneme_scores, # This will be per-word or per-phoneme approximation
+                "overall_score": final_score,
+                "pronunciation_score": final_score,
+                "phoneme_scores": phoneme_scores,
                 "pitch_analysis": pitch_results,
                 "fluency_score": fluency_score,
-                "feature_vector": features.tolist() if hasattr(features, 'tolist') else features,
-                "embeddings": [], # Can be large, skip to save bandwidth/db space if not needed
+                "feature_vector": features.tolist() if hasattr(features, 'tolist') else [],
                 "feedback": feedback,
-                "mispronounced_phonemes": self.get_mispronounced_phonemes(phoneme_scores),
+                "mispronounced_phonemes": [p["expected"] for p in phoneme_reports if p["score"] < 0.5],
                 "suggestions": self.get_suggestions(phoneme_scores, pitch_results),
                 "transcription": transcription,
-                "strengths": self.get_strengths(overall_score, pitch_results, fluency_score),
+                "acoustic_confidence": analysis.get("acoustic_confidence", 0),
+                "strengths": self.get_strengths(final_score, pitch_results, fluency_score),
                 "areas_to_improve": self.get_improvements(phoneme_scores, pitch_results, fluency_score)
             }
             
@@ -126,6 +132,7 @@ class SpeechAnalyzer:
         
         return {
             "success": True,
+            "overall_score": score,
             "pronunciation_score": score,
             "phoneme_scores": {char: {"score": random.randint(70, 99)} for char in reference_text},
             "pitch_analysis": {
@@ -134,35 +141,21 @@ class SpeechAnalyzer:
             },
             "fluency_score": random.randint(80, 100),
             "feature_vector": [],
-            "feedback": "Simulation: Libs missing. Install torch/librosa for real analysis.",
+            "feedback": "Simulation: Libs missing or format unsupported. Install torch/librosa and ffmpeg for real analysis.",
             "mispronounced_phonemes": mispronounced,
-            "suggestions": ["Install ML libraries"],
+            "acoustic_confidence": 0.5,
+            "suggestions": ["Ensure audio is in WAV format or install ffmpeg"],
             "strengths": strengths,
             "areas_to_improve": improvements
         }
 
     def transcribe_audio(self, audio) -> Tuple[str, float]:
-        """Transcribe audio using Wav2Vec2"""
-        if not self.wav2vec_model:
+        """Transcribe audio using accurate model"""
+        if not self.model_wrapper:
             return "", 0.0
-            
-        inputs = self.wav2vec_processor(
-            audio, 
-            sampling_rate=self.sample_rate, 
-            return_tensors="pt"
-        )
         
-        with torch.no_grad():
-            logits = self.wav2vec_model(**inputs).logits
-            
-        predicted_ids = torch.argmax(logits, dim=-1)
-        transcription = self.wav2vec_processor.batch_decode(predicted_ids)[0]
-        
-        # Calculate confidence
-        probs = torch.nn.functional.softmax(logits, dim=-1)
-        confidence = torch.mean(torch.max(probs, dim=-1).values).item()
-        
-        return transcription.lower(), confidence
+        result = self.model_wrapper.transcribe(audio)
+        return result["text"], result["confidence"]
 
     def analyze_phonemes_real(self, transcription: str, reference_text: str, confidence: float) -> Dict:
         """

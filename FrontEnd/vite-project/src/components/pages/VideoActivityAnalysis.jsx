@@ -1,16 +1,26 @@
-import React, { useState, useRef } from 'react';
+//src/components/pages/VideoActivityAnalysis.jsx
+import React, { useState, useRef, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Upload, Camera, Video, AlertCircle, CheckCircle, Loader2, ArrowRight, FileText, TrendingUp, Mic, Activity } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
-import Header from '../common/Header';
 import { analyzeVideo } from '../../services/api';
 
 const VideoActivityAnalysis = () => {
+    const location = useLocation();
     const [file, setFile] = useState(null);
     const [previewUrl, setPreviewUrl] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [result, setResult] = useState(null);
+    const [result, setResult] = useState(location.state?.analysisResult?.result || null);
     const [error, setError] = useState(null);
     const fileInputRef = useRef(null);
+
+    useEffect(() => {
+        if (location.state?.analysisResult?.result) {
+            setResult(location.state.analysisResult.result);
+            // Clear location state to prevent reload issues
+            window.history.replaceState({}, document.title);
+        }
+    }, [location.state]);
 
     const handleFileChange = (e) => {
         const selectedFile = e.target.files[0];
@@ -66,37 +76,35 @@ const VideoActivityAnalysis = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors duration-300">
-            <Header />
-            <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-                <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
-                        <Video className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+        <>
+            <div className="max-w-7xl mx-auto py-4 md:py-8 px-2 md:px-0">
+                <div className="mb-6 md:mb-8 text-center md:text-left px-2">
+                    <h1 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white flex items-center justify-center md:justify-start gap-2">
+                        <Video className="w-6 h-6 md:w-8 md:h-8 text-blue-600 dark:text-blue-400" />
                         AI Activity Analysis
                     </h1>
-                    <p className="text-gray-600 dark:text-gray-400 mt-2">
-                        Upload or record a video of the child to analyze activities, engagement, and emotions through AI.
+                    <p className="text-gray-500 dark:text-gray-400 mt-2 text-sm md:text-base">
+                        Analyze activities, engagement, and emotions through AI.
                     </p>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
                     {/* Left Column: Upload/Preview */}
-                    <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
-                        <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">Upload Video</h2>
+                    <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-4 md:p-6 transition-all">
+                        <h2 className="text-lg md:text-xl font-bold text-gray-800 dark:text-white mb-4">Upload Video</h2>
                         
                         {!previewUrl ? (
-                            <div className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl p-10 flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer group"
+                            <div className="border-2 border-dashed border-gray-200 dark:border-gray-800 rounded-2xl p-6 md:p-10 flex flex-col items-center justify-center bg-gray-50/50 dark:bg-gray-800/30 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer group"
                                 onClick={() => fileInputRef.current?.click()}
                             >
-                                <div className="p-4 bg-white dark:bg-gray-900 rounded-full shadow-sm mb-4 group-hover:scale-110 transition-transform">
-                                    <Upload className="w-8 h-8 text-blue-500" />
+                                <div className="p-3 md:p-4 bg-white dark:bg-gray-900 rounded-2xl shadow-sm mb-3 md:mb-4 group-hover:scale-110 transition-transform">
+                                    <Upload className="w-6 h-6 md:w-8 md:h-8 text-blue-500" />
                                 </div>
-                                <p className="text-lg font-medium text-gray-700 dark:text-gray-300">Click to Upload Video</p>
-                                <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">MP4, WebM, MOV up to 100MB</p>
-                                <p className="text-xs text-gray-400 dark:text-gray-600 mt-4">or record directly using camera</p>
+                                <p className="text-base md:text-lg font-bold text-gray-700 dark:text-gray-300">Click to Upload</p>
+                                <p className="text-[10px] md:text-sm text-gray-500 dark:text-gray-500 mt-1 uppercase tracking-wider font-medium">MP4, WebM up to 100MB</p>
                             </div>
                         ) : (
-                            <div className="relative rounded-xl overflow-hidden bg-black aspect-video flex items-center justify-center">
+                            <div className="relative rounded-2xl overflow-hidden bg-black aspect-video flex items-center justify-center shadow-lg">
                                 <video 
                                     src={previewUrl} 
                                     className="max-h-full max-w-full" 
@@ -104,7 +112,7 @@ const VideoActivityAnalysis = () => {
                                 />
                                 <button 
                                     onClick={resetAnalysis}
-                                    className="absolute top-2 right-2 bg-white/90 p-2 rounded-full hover:bg-white transition-colors"
+                                    className="absolute top-3 right-3 bg-white/90 dark:bg-gray-900/90 p-2 rounded-xl hover:bg-white transition-colors shadow-lg active:scale-95"
                                 >
                                     <span className="text-xs font-bold text-red-500">✕</span>
                                 </button>
@@ -120,17 +128,17 @@ const VideoActivityAnalysis = () => {
                         />
 
                         {/* Camera Option for Mobile */}
-                        <div className="mt-4 flex gap-4">
+                        <div className="mt-4 flex flex-col sm:flex-row gap-3">
                             <button 
                                 onClick={() => fileInputRef.current?.click()}
-                                className="flex-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 py-3 px-4 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center justify-center gap-2"
+                                className="flex-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 py-3 px-4 rounded-xl font-bold hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center justify-center gap-2 active:scale-95"
                             >
-                                <Upload size={20} />
-                                Upload File
+                                <Upload size={18} />
+                                <span className="text-sm">Upload File</span>
                             </button>
-                            <label className="flex-1 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400 py-3 px-4 rounded-lg font-medium hover:bg-blue-100 dark:hover:bg-blue-900/40 flex items-center justify-center gap-2 cursor-pointer transition-colors">
-                                <Camera size={20} />
-                                Record Camera
+                            <label className="flex-1 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/50 text-blue-700 dark:text-blue-400 py-3 px-4 rounded-xl font-bold hover:bg-blue-100 dark:hover:bg-blue-900/40 flex items-center justify-center gap-2 cursor-pointer transition-colors active:scale-95">
+                                <Camera size={18} />
+                                <span className="text-sm">Record Camera</span>
                                 <input 
                                     type="file" 
                                     accept="video/*" 
@@ -319,7 +327,7 @@ const VideoActivityAnalysis = () => {
                     </div>
                 </div>
             </div>
-        </div>
+        </>
     );
 };
 

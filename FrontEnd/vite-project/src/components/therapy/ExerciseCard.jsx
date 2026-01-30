@@ -1,78 +1,120 @@
 import React from 'react';
 import { Volume2, Target, Award } from 'lucide-react';
 
-const ExerciseCard = ({ exercise, onPlayReference }) => {
+const ExerciseCard = ({ exercise, onPlayReference, flat = false }) => {
   const getDifficultyColor = (difficulty) => {
+    // ... (keeping internal logic same)
     switch (difficulty) {
-      case 'easy': return 'text-green-600 bg-green-100';
-      case 'medium': return 'text-yellow-600 bg-yellow-100';
-      case 'hard': return 'text-red-600 bg-red-100';
-      default: return 'text-gray-600 bg-gray-100';
+      case 'easy': return 'from-green-400 to-emerald-600 shadow-green-500/20';
+      case 'medium': return 'from-yellow-400 to-orange-600 shadow-orange-500/20';
+      case 'hard': return 'from-red-400 to-rose-600 shadow-rose-500/20';
+      default: return 'from-gray-400 to-gray-600 shadow-gray-500/20';
     }
   };
 
+  const getMouthPositionTip = (phoneme) => {
+    // ... (keeping internal logic same)
+    const tips = {
+      'h': 'Gently exhale with open mouth, like fogging a mirror',
+      'w': 'Round your lips like you\'re about to whistle',
+      'a': 'Open mouth wide, like at the dentist',
+      'e': 'Smile with slightly open mouth',
+      'i': 'Wide smile with teeth slightly apart',
+      'o': 'Round lips in a circle shape',
+      'u': 'Tightly rounded lips, like saying "oo"',
+      'p': 'Press lips together and release air gently',
+      'm': 'Close lips and hum through your nose',
+      'b': 'Press lips together then pop them open with voice',
+      'k': 'Lift back of tongue to roof of mouth',
+      't': 'Tap tongue tip behind front teeth',
+      'd': 'Touch tongue to upper teeth and release with voice',
+      's': 'Hiss like a snake through teeth',
+      'r': 'Curl tongue tip up without touching roof'
+    };
+    return tips[phoneme?.toLowerCase()] || 'Keep your mouth relaxed and speak clearly';
+  };
+
+  const containerClasses = flat 
+    ? "relative w-full overflow-hidden" 
+    : "bg-white dark:bg-gray-900 rounded-[2rem] shadow-xl p-6 md:p-10 border border-gray-100 dark:border-gray-800 transition-all relative overflow-hidden group";
+
   return (
-    <div className="bg-white dark:bg-gray-950 rounded-2xl shadow-xl p-6 border border-white/20 dark:border-gray-800 transition-colors">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-white transition-colors">Current Exercise</h2>
-        <span className={`px-3 py-1 rounded-full text-sm font-semibold transition-colors ${getDifficultyColor(exercise.difficulty).replace('bg-', 'dark:bg-').replace('-100', '-900/30').replace('text-', 'dark:text-').replace('-600', '-400')} ${getDifficultyColor(exercise.difficulty)}`}>
-          {exercise.difficulty.charAt(0).toUpperCase() + exercise.difficulty.slice(1)}
-        </span>
+    <div className={containerClasses}>
+      {/* Difficulty Badge - Floating */}
+      <div className={`absolute top-4 right-4 px-4 py-1.5 rounded-xl bg-gradient-to-r text-white font-black text-[10px] uppercase tracking-[0.2em] shadow-lg z-10 ${getDifficultyColor(exercise.difficulty)}`}>
+        {exercise.difficulty}
       </div>
 
-      {/* Main Exercise Display */}
-      <div className="text-center mb-6">
-        <div className="text-6xl mb-4 animate-bounce-slow">{exercise.visualAid}</div>
-        <div className="text-5xl font-child font-bold text-blue-600 dark:text-blue-400 mb-4 transition-colors">
-          {exercise.text}
-        </div>
-        <button
-          onClick={onPlayReference}
-          className="inline-flex items-center space-x-2 bg-blue-100 dark:bg-blue-900/40 hover:bg-blue-200 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 px-4 py-2 rounded-lg transition-all duration-300 transform hover:scale-105"
-        >
-          <Volume2 size={18} />
-          <span>Hear Pronunciation</span>
-        </button>
-      </div>
+      {/* Background Micro-pattern */}
+      <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] pointer-events-none bg-[radial-gradient(#3b82f6_1px,transparent_1px)] [background-size:20px_20px]" />
 
-      {/* Exercise Details */}
-      <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200 dark:border-gray-800 transition-colors">
-        <div className="text-center p-3 bg-gray-50 dark:bg-gray-900 rounded-lg transition-colors border border-transparent dark:border-gray-800">
-          <Target className="w-5 h-5 text-red-500 mx-auto mb-1" />
-          <div className="text-sm text-gray-600 dark:text-gray-400">Target Sound</div>
-          <div className="font-semibold text-gray-800 dark:text-white transition-colors">{exercise.targetPhoneme}</div>
+      <div className={`flex flex-col items-center text-center relative ${flat ? "p-8 md:p-12" : "space-y-6"}`}>
+        {/* Visual Aid */}
+        <div className="relative mb-4">
+          <div className="absolute inset-0 bg-blue-500/10 dark:bg-blue-500/20 rounded-full blur-3xl opacity-50" />
+          <div className="text-6xl md:text-8xl mb-2 animate-bounce-slow drop-shadow-xl filter relative z-10 select-none">
+            {exercise.visualAid}
+          </div>
         </div>
         
-        <div className="text-center p-3 bg-gray-50 dark:bg-gray-900 rounded-lg transition-colors border border-transparent dark:border-gray-800">
-          <Award className="w-5 h-5 text-purple-500 mx-auto mb-1" />
-          <div className="text-sm text-gray-600 dark:text-gray-400">Type</div>
-          <div className="font-semibold text-gray-800 dark:text-white transition-colors capitalize">{exercise.type}</div>
+        {/* Target Word Focus */}
+        <div className="space-y-4">
+          <h2 className="text-5xl md:text-7xl font-black text-gray-900 dark:text-white transition-colors tracking-tighter decoration-blue-500/30 underline-offset-8">
+            {exercise.text}
+          </h2>
+          
+          <div className="flex flex-col items-center pt-2">
+            <button
+              onClick={onPlayReference}
+              className="group flex items-center gap-3 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-600 dark:hover:bg-blue-600 text-blue-600 dark:text-blue-400 hover:text-white px-8 py-4 rounded-2xl font-black transition-all transform hover:scale-105 active:scale-95 shadow-md"
+            >
+              <Volume2 className="group-hover:animate-pulse" size={24} />
+              <span className="text-base uppercase tracking-widest">Master Sample</span>
+            </button>
+          </div>
         </div>
-      </div>
 
-      {/* Mouth Position Guide */}
-      <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-transparent dark:border-blue-800 transition-colors">
-        <h4 className="font-semibold text-blue-800 dark:text-blue-300 mb-2 transition-colors">👄 Mouth Position Guide</h4>
-        <p className="text-sm text-blue-700 dark:text-blue-400/80 transition-colors">
-          For "{exercise.targetPhoneme}" sound: {getMouthPositionTip(exercise.targetPhoneme)}
-        </p>
+        {/* Technical Guidance */}
+        <div className="grid grid-cols-2 gap-4 w-full pt-8 mt-4 border-t border-gray-100 dark:border-gray-800">
+           <div className="flex items-center gap-4 bg-gray-50 dark:bg-gray-800/80 p-5 rounded-3xl border border-gray-100 dark:border-gray-700 transition-colors text-left shadow-sm">
+              <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-2xl flex items-center justify-center shrink-0">
+                <Target className="text-red-500" size={24} />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest truncate">Goal Sound</p>
+                <p className="text-xl font-black text-gray-800 dark:text-white uppercase truncate">{exercise.targetPhoneme}</p>
+              </div>
+           </div>
+
+           <div className="flex items-center gap-4 bg-gray-50 dark:bg-gray-800/80 p-5 rounded-3xl border border-gray-100 dark:border-gray-700 transition-colors text-left shadow-sm">
+              <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-2xl flex items-center justify-center shrink-0">
+                <Award className="text-purple-500" size={24} />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest truncate">Mission Mode</p>
+                <p className="text-xl font-black text-gray-800 dark:text-white capitalize truncate">{exercise.type}</p>
+              </div>
+           </div>
+        </div>
+
+        {/* Coach Advice */}
+        <div className="w-full bg-gradient-to-br from-blue-600 to-indigo-700 p-6 md:p-8 rounded-[2rem] text-white shadow-xl shadow-blue-500/20 text-left relative overflow-hidden mt-6">
+          <div className="relative z-10 flex items-start gap-4">
+            <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center shrink-0">
+               <span className="text-2xl">🗣️</span>
+            </div>
+            <div>
+              <h4 className="font-black uppercase text-[10px] tracking-[0.2em] text-blue-100 mb-1">Coach Insight</h4>
+              <p className="text-base md:text-xl font-black leading-tight">
+                 {getMouthPositionTip(exercise.targetPhoneme)}
+              </p>
+            </div>
+          </div>
+          <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
+        </div>
       </div>
     </div>
   );
-};
-
-// Helper function for mouth position tips
-const getMouthPositionTip = (phoneme) => {
-  const tips = {
-    'h': 'Gently exhale with open mouth, like fogging a mirror',
-    'w': 'Round your lips like you\'re about to whistle',
-    'a': 'Open mouth wide, like at the dentist',
-    'e': 'Smile with slightly open mouth',
-    'i': 'Wide smile with teeth slightly apart',
-    'o': 'Round lips in a circle shape',
-    'u': 'Tightly rounded lips, like saying "oo"'
-  };
-  return tips[phoneme] || 'Keep your mouth relaxed and speak clearly';
 };
 
 export default ExerciseCard;

@@ -1,3 +1,4 @@
+#backend\src\database\schemas.py
 from pydantic import BaseModel, EmailStr, Field
 from typing import Optional, List, Dict
 from datetime import datetime
@@ -22,14 +23,44 @@ class UserUpdate(BaseModel):
     language_preference: Optional[LanguageCode] = None
     regional_language: Optional[LanguageCode] = None
     avatar_url: Optional[str] = None
+    phone: Optional[str] = None
+    location: Optional[str] = None
+    gender: Optional[str] = None
     notification_enabled: Optional[bool] = None
     sound_enabled: Optional[bool] = None
+    daily_goal: Optional[int] = None
+    reminder_time: Optional[str] = None
+    weekly_report: Optional[bool] = None
+    achievement_alerts: Optional[bool] = None
+    practice_reminders: Optional[bool] = None
+    profile_visibility: Optional[str] = None
+    share_progress: Optional[bool] = None
+    data_collection: Optional[bool] = None
+    two_factor_auth: Optional[bool] = None
+    session_history_enabled: Optional[bool] = None
+    biometric_login: Optional[bool] = None
+    cookies_enabled: Optional[bool] = None
 
 class UserResponse(UserBase):
     id: str
     is_active: bool
     created_at: datetime
     avatar_url: Optional[str] = None
+    phone: Optional[str] = None
+    location: Optional[str] = None
+    gender: Optional[str] = None
+    daily_goal: Optional[int] = None
+    reminder_time: Optional[str] = None
+    weekly_report: bool = True
+    achievement_alerts: bool = True
+    practice_reminders: bool = True
+    profile_visibility: str = "private"
+    share_progress: bool = False
+    data_collection: bool = True
+    two_factor_auth: bool = False
+    session_history_enabled: bool = True
+    biometric_login: bool = False
+    cookies_enabled: bool = True
     
     class Config:
         from_attributes = True

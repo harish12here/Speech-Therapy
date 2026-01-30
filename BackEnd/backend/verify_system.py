@@ -1,3 +1,4 @@
+# verify_system.py
 """
 System Verification Script for Speech Therapy Backend
 ======================================================

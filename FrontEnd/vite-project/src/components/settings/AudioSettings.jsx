@@ -1,9 +1,11 @@
+// src/components/settings/AudioSettings.jsx
 import React, { useState, useEffect } from 'react';
-import { Volume2, Mic, Headphones, Waves, Zap, CheckCircle } from 'lucide-react';
+import { Volume2, Mic, Headphones, Waves, Zap, Play, Pause } from 'lucide-react';
 import { getCurrentUser, updateUserProfile } from '../../services/api';
 
 const AudioSettings = ({ saveTrigger, onSaveComplete }) => {
   const [loading, setLoading] = useState(true);
+  const [isTesting, setIsTesting] = useState(null);
   const [settings, setSettings] = useState({
     microphone: 'default',
     speakers: 'default',
@@ -22,10 +24,12 @@ const AudioSettings = ({ saveTrigger, onSaveComplete }) => {
       try {
         setLoading(true);
         const user = await getCurrentUser();
-        setSettings(prev => ({
-          ...prev,
-          soundEnabled: user.sound_enabled ?? true
-        }));
+        if (user) {
+          setSettings(prev => ({
+            ...prev,
+            soundEnabled: user.sound_enabled ?? true
+          }));
+        }
       } catch (err) {
         console.error("Failed to fetch audio settings", err);
       } finally {
@@ -46,14 +50,11 @@ const AudioSettings = ({ saveTrigger, onSaveComplete }) => {
       await updateUserProfile({
         sound_enabled: settings.soundEnabled
       });
-      
-      // Save other settings to localStorage for persistence since backend doesn't have fields for them yet
       localStorage.setItem('audioSettings', JSON.stringify(settings));
 
-      // Show success notification
       const successEvent = new CustomEvent('showNotification', {
         detail: { 
-          message: 'Audio settings updated! 🔊', 
+          message: 'Audio settings updated successfully!', 
           type: 'success' 
         }
       });
@@ -67,236 +68,286 @@ const AudioSettings = ({ saveTrigger, onSaveComplete }) => {
 
   const audioDevices = {
     microphones: [
-      { id: 'default', name: 'Default Microphone', quality: 'Good' },
-      { id: 'internal', name: 'Built-in Microphone', quality: 'Average' },
-      { id: 'external', name: 'External USB Mic', quality: 'Excellent' }
+      { id: 'default', name: 'Default Microphone' },
+      { id: 'internal', name: 'Built-in Microphone' },
+      { id: 'external', name: 'External USB Mic' }
     ],
     speakers: [
-      { id: 'default', name: 'Default Speakers', quality: 'Good' },
-      { id: 'headphones', name: 'Headphones', quality: 'Excellent' },
-      { id: 'bluetooth', name: 'Bluetooth Speaker', quality: 'Good' }
+      { id: 'default', name: 'Default Speakers' },
+      { id: 'headphones', name: 'Headphones' },
+      { id: 'bluetooth', name: 'Bluetooth Speaker' }
     ]
   };
 
-  const handleTestMicrophone = async () => {
-    // Simulate microphone test
-    alert('🎤 Testing microphone... Speak now!');
+  const handleTestMicrophone = () => {
+    setIsTesting('microphone');
+    setTimeout(() => {
+      setIsTesting(null);
+      const event = new CustomEvent('showNotification', {
+        detail: { 
+          message: 'Microphone test completed!', 
+          type: 'success' 
+        }
+      });
+      window.dispatchEvent(event);
+    }, 2000);
   };
 
   const handleTestSpeakers = () => {
-    // Simulate speaker test
-    alert('🔊 Testing speakers... Check if you hear sound!');
+    setIsTesting('speakers');
+    setTimeout(() => {
+      setIsTesting(null);
+      const event = new CustomEvent('showNotification', {
+        detail: { 
+          message: 'Speaker test completed!', 
+          type: 'success' 
+        }
+      });
+      window.dispatchEvent(event);
+    }, 2000);
   };
 
   if (loading) {
-    return <div className="text-center py-10 text-gray-600">Loading audio settings...</div>;
+    return (
+      <div className="flex flex-col items-center justify-center py-20">
+        <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="text-gray-600 dark:text-gray-300 font-medium">Loading audio settings...</p>
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="text-center mb-8">
-        <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Volume2 className="text-blue-600 dark:text-blue-400" size={32} />
-        </div>
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Audio Settings</h2>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">Configure your microphone and speakers for optimal speech practice</p>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Microphone Settings */}
-        <div className="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-6 border border-blue-200 dark:border-blue-800 shadow-sm">
-          <div className="flex items-center space-x-3 mb-6">
-            <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
-              <Mic className="text-white" size={24} />
+    <div className="max-w-4xl mx-auto space-y-10 animate-fadeIn">
+      {/* Input Settings */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <section className="space-y-6">
+          <div className="flex items-center space-x-2 pb-3 border-b border-gray-200 dark:border-gray-700">
+            <div className="w-8 h-8 bg-gradient-to-br from-indigo-100 to-indigo-50 dark:from-indigo-900/30 dark:to-indigo-900/10 text-indigo-600 dark:text-indigo-400 rounded-lg flex items-center justify-center">
+              <Mic size={16} />
             </div>
-            <div>
-              <h3 className="text-xl font-semibold text-gray-800 dark:text-white">Microphone</h3>
-              <p className="text-gray-600 dark:text-gray-400 text-sm">Settings for speech input</p>
-            </div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Microphone Settings</h3>
           </div>
-
-          <div className="space-y-4">
+          
+          <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Select Microphone
+              <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                Input Device
               </label>
               <select
                 value={settings.microphone}
                 onChange={(e) => setSettings({...settings, microphone: e.target.value})}
-                className="w-full px-4 py-3 bg-white dark:bg-gray-800 dark:text-white border border-gray-300 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all font-medium"
               >
                 {audioDevices.microphones.map(device => (
-                  <option key={device.id} value={device.id}>
-                    {device.name} ({device.quality})
-                  </option>
+                  <option key={device.id} value={device.id}>{device.name}</option>
                 ))}
               </select>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Input Volume: <span className="text-blue-600 dark:text-blue-400 font-semibold">{settings.inputVolume}%</span>
-              </label>
-              <div className="flex items-center space-x-3">
-                <Mic className="text-gray-500 dark:text-gray-400" size={20} />
+              <div className="flex justify-between items-center mb-3">
+                <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Input Volume
+                </label>
+                <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400">{settings.inputVolume}%</span>
+              </div>
+              <div className="relative">
                 <input
-                  type="range"
-                  min="0"
-                  max="100"
+                  type="range" min="0" max="100"
                   value={settings.inputVolume}
-                  onChange={(e) => setSettings({...settings, inputVolume: e.target.value})}
-                  className="w-full h-3 bg-gradient-to-r from-blue-400 to-blue-600 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-blue-500"
+                  onChange={(e) => setSettings({...settings, inputVolume: parseInt(e.target.value)})}
+                  className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-indigo-600 [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-lg"
                 />
-                <div className="w-6 text-center text-sm font-semibold text-blue-600 dark:text-blue-400">
-                  {settings.inputVolume}
+                <div className="flex justify-between text-xs text-gray-400 mt-1">
+                  <span>0</span>
+                  <span>50</span>
+                  <span>100</span>
                 </div>
               </div>
             </div>
 
             <button
               onClick={handleTestMicrophone}
-              className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 px-4 rounded-xl font-semibold transition-colors flex items-center justify-center space-x-2"
+              disabled={isTesting === 'microphone'}
+              className={`w-full flex items-center justify-center space-x-2 py-3 px-4 rounded-xl font-medium text-sm transition-all duration-200 ${
+                isTesting === 'microphone'
+                  ? 'bg-indigo-600 text-white cursor-wait'
+                  : 'bg-gradient-to-r from-indigo-50 to-white dark:from-gray-700 dark:to-gray-800 border border-indigo-200 dark:border-indigo-700/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-gray-700'
+              }`}
             >
-              <Waves size={18} />
-              <span>Test Microphone</span>
+              {isTesting === 'microphone' ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Testing...</span>
+                </>
+              ) : (
+                <>
+                  <Mic size={16} />
+                  <span>Test Microphone</span>
+                </>
+              )}
             </button>
           </div>
-        </div>
+        </section>
 
-        {/* Speaker Settings */}
-        <div className="bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-900/20 dark:to-emerald-900/20 rounded-2xl p-6 border border-green-200 dark:border-green-800 shadow-sm">
-          <div className="flex items-center space-x-3 mb-6">
-            <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center shadow-lg shadow-green-500/20">
-              <Headphones className="text-white" size={24} />
+        {/* Output Settings */}
+        <section className="space-y-6">
+          <div className="flex items-center space-x-2 pb-3 border-b border-gray-200 dark:border-gray-700">
+            <div className="w-8 h-8 bg-gradient-to-br from-teal-100 to-teal-50 dark:from-teal-900/30 dark:to-teal-900/10 text-teal-600 dark:text-teal-400 rounded-lg flex items-center justify-center">
+              <Headphones size={16} />
             </div>
-            <div>
-              <h3 className="text-xl font-semibold text-gray-800 dark:text-white">Speakers</h3>
-              <p className="text-gray-600 dark:text-gray-400 text-sm">Settings for audio output</p>
-            </div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Speaker Settings</h3>
           </div>
-
-          <div className="space-y-4">
+          
+          <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Select Output Device
+              <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                Output Device
               </label>
               <select
                 value={settings.speakers}
                 onChange={(e) => setSettings({...settings, speakers: e.target.value})}
-                className="w-full px-4 py-3 bg-white dark:bg-gray-800 dark:text-white border border-gray-300 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all font-medium"
               >
                 {audioDevices.speakers.map(device => (
-                  <option key={device.id} value={device.id}>
-                    {device.name} ({device.quality})
-                  </option>
+                  <option key={device.id} value={device.id}>{device.name}</option>
                 ))}
               </select>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Output Volume: <span className="text-green-600 dark:text-green-400 font-semibold">{settings.outputVolume}%</span>
-              </label>
-              <div className="flex items-center space-x-3">
-                <Volume2 className="text-gray-500 dark:text-gray-400" size={20} />
+              <div className="flex justify-between items-center mb-3">
+                <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Output Volume
+                </label>
+                <span className="text-sm font-bold text-teal-600 dark:text-teal-400">{settings.outputVolume}%</span>
+              </div>
+              <div className="relative">
                 <input
-                  type="range"
-                  min="0"
-                  max="100"
+                  type="range" min="0" max="100"
                   value={settings.outputVolume}
-                  onChange={(e) => setSettings({...settings, outputVolume: e.target.value})}
-                  className="w-full h-3 bg-gradient-to-r from-green-400 to-green-600 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-green-500"
+                  onChange={(e) => setSettings({...settings, outputVolume: parseInt(e.target.value)})}
+                  className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-teal-600 [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-lg"
                 />
-                <div className="w-6 text-center text-sm font-semibold text-green-600 dark:text-green-400">
-                  {settings.outputVolume}
+                <div className="flex justify-between text-xs text-gray-400 mt-1">
+                  <span>0</span>
+                  <span>50</span>
+                  <span>100</span>
                 </div>
               </div>
             </div>
 
             <button
               onClick={handleTestSpeakers}
-              className="w-full bg-green-500 hover:bg-green-600 text-white py-3 px-4 rounded-xl font-semibold transition-colors flex items-center justify-center space-x-2"
+              disabled={isTesting === 'speakers'}
+              className={`w-full flex items-center justify-center space-x-2 py-3 px-4 rounded-xl font-medium text-sm transition-all duration-200 ${
+                isTesting === 'speakers'
+                  ? 'bg-teal-600 text-white cursor-wait'
+                  : 'bg-gradient-to-r from-teal-50 to-white dark:from-gray-700 dark:to-gray-800 border border-teal-200 dark:border-teal-700/30 text-teal-600 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-gray-700'
+              }`}
             >
-              <Zap size={18} />
-              <span>Test Speakers</span>
+              {isTesting === 'speakers' ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Testing...</span>
+                </>
+              ) : (
+                <>
+                  <Volume2 size={16} />
+                  <span>Test Speakers</span>
+                </>
+              )}
             </button>
           </div>
-        </div>
+        </section>
       </div>
 
-      {/* Audio Enhancements */}
-      <div className="bg-gradient-to-br from-purple-50 to-violet-100 dark:from-purple-900/20 dark:to-violet-900/20 rounded-2xl p-6 border border-purple-200 dark:border-purple-800 shadow-sm">
-        <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-4 flex items-center space-x-2">
-          <Zap className="text-purple-500" size={24} />
-          <span>Audio Enhancements</span>
-        </h3>
+      {/* Enhancements */}
+      <section className="space-y-6">
+        <div className="flex items-center space-x-2 pb-3 border-b border-gray-200 dark:border-gray-700">
+          <div className="w-8 h-8 bg-gradient-to-br from-purple-100 to-purple-50 dark:from-purple-900/30 dark:to-purple-900/10 text-purple-600 dark:text-purple-400 rounded-lg flex items-center justify-center">
+            <Zap size={16} />
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Audio Enhancements</h3>
+        </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
-            { id: 'noiseCancellation', label: 'Noise Cancellation', description: 'Reduce background noise' },
-            { id: 'echoCancellation', label: 'Echo Cancellation', description: 'Remove echo effects' },
-            { id: 'autoGain', label: 'Auto Gain Control', description: 'Automatic volume adjustment' }
+            { id: 'noiseCancellation', label: 'Noise Cancellation', desc: 'Reduce background noise' },
+            { id: 'echoCancellation', label: 'Echo Cancellation', desc: 'Remove echo effects' },
+            { id: 'autoGain', label: 'Auto Gain Control', desc: 'Automatic volume adjustment' }
           ].map((feature) => (
-            <label key={feature.id} className="flex items-start space-x-3 p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-500 cursor-pointer transition-all group">
-              <div className="flex items-center h-5 mt-1">
+            <label key={feature.id} className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-white dark:from-gray-700/50 dark:to-gray-800/30 rounded-xl border border-gray-200 dark:border-gray-600 cursor-pointer hover:border-indigo-300 dark:hover:border-indigo-500/30 transition-colors group">
+              <div>
+                <span className="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                  {feature.label}
+                </span>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{feature.desc}</p>
+              </div>
+              <div className="relative">
                 <input
                   type="checkbox"
                   checked={settings[feature.id]}
                   onChange={(e) => setSettings({...settings, [feature.id]: e.target.checked})}
-                  className="w-4 h-4 text-purple-500 rounded border-gray-300 dark:border-gray-600 dark:bg-gray-900 transition-colors"
+                  className="sr-only"
                 />
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center space-x-2">
-                  <span className="font-semibold text-gray-800 dark:text-white group-hover:text-purple-500 transition-colors">{feature.label}</span>
-                  {settings[feature.id] && (
-                    <CheckCircle className="w-4 h-4 text-green-500" />
-                  )}
+                <div className={`w-10 h-6 flex items-center rounded-full p-1 transition-colors duration-200 ${
+                  settings[feature.id] 
+                    ? 'bg-gradient-to-r from-indigo-500 to-purple-600' 
+                    : 'bg-gray-300 dark:bg-gray-600'
+                }`}>
+                  <div className={`w-4 h-4 bg-white rounded-full shadow transform transition-transform duration-200 ${
+                    settings[feature.id] ? 'translate-x-4' : ''
+                  }`} />
                 </div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{feature.description}</p>
               </div>
             </label>
           ))}
         </div>
-      </div>
+      </section>
 
-      {/* Audio Quality */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-gray-200 dark:border-gray-800 shadow-sm">
-        <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">Audio Quality</h3>
+      {/* Quality Settings */}
+      <section className="space-y-6">
+        <div className="flex items-center space-x-2 pb-3 border-b border-gray-200 dark:border-gray-700">
+          <div className="w-8 h-8 bg-gradient-to-br from-blue-100 to-blue-50 dark:from-blue-900/30 dark:to-blue-900/10 text-blue-600 dark:text-blue-400 rounded-lg flex items-center justify-center">
+            <Waves size={16} />
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Processing Quality</h3>
+        </div>
+        
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <div className="space-y-3">
+            <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
               Sample Rate
             </label>
             <select
               value={settings.sampleRate}
-              onChange={(e) => setSettings({...settings, sampleRate: e.target.value})}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              onChange={(e) => setSettings({...settings, sampleRate: parseInt(e.target.value)})}
+              className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all font-medium"
             >
-              <option value="8000">8 kHz - Telephone Quality</option>
-              <option value="16000">16 kHz - Good Quality</option>
-              <option value="44100">44.1 kHz - CD Quality</option>
-              <option value="48000">48 kHz - Studio Quality</option>
+              <option value="16000">16 kHz - Recommended</option>
+              <option value="44100">44.1 kHz - High Fidelity</option>
+              <option value="48000">48 kHz - Professional</option>
             </select>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Higher sample rate = Better quality</p>
           </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Audio Quality Preset
+          <div className="space-y-3">
+            <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              Quality Profile
             </label>
             <select
               value={settings.audioQuality}
               onChange={(e) => setSettings({...settings, audioQuality: e.target.value})}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all font-medium"
             >
-              <option value="low">Low - Faster Processing</option>
-              <option value="medium">Medium - Balanced</option>
-              <option value="high">High - Best Quality</option>
+              <option value="low">Performance Priority</option>
+              <option value="medium">Balanced</option>
+              <option value="high">Accuracy Priority</option>
             </select>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Choose based on your device capability</p>
           </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 };

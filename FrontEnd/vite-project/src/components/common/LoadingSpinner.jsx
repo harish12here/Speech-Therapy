@@ -1,3 +1,4 @@
+//src/components/common/LoadingSpinner.jsx
 import React from 'react';
 import { Mic, Activity, Zap } from 'lucide-react';
 

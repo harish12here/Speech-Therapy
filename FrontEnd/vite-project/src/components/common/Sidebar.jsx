@@ -1,3 +1,4 @@
+//src/components/common/Sidebar.jsx
 import React, { useState } from 'react';
 import { 
   Home, 
@@ -11,116 +12,51 @@ import {
   ChevronLeft,
   ChevronRight,
   LogOut,
-  Mic
+  Mic,
+  Video,
+  LayoutDashboard,
+  BrainCircuit
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
-const Sidebar = ({ isOpen = true, onToggle }) => {
+const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [isCollapsed, setIsCollapsed] = useState(false);
-
-  const user = {
-    name: 'Rohan Kumar',
-    avatar: null,
-    level: 'Beginner',
-    progress: 65
-  };
 
   const navigation = [
-    { name: 'Dashboard', path: '/dashboard', icon: Home, badge: null },
-    { name: 'Therapy', path: '/therapy', icon: Activity, badge: 'New' },
-    { name: 'Progress', path: '/progress', icon: BarChart3, badge: null },
-    { name: 'Exercises', path: '/exercises', icon: BookOpen, badge: '12' },
-    { name: 'Settings', path: '/settings', icon: Settings, badge: null },
+    { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
+    { name: 'Therapy Session', path: '/therapy', icon: Activity, badge: 'Live' },
+    { name: 'Video Analysis', path: '/video-analysis', icon: Video },
+    { name: 'Progress', path: '/progress', icon: BarChart3 },
+    { name: 'Exercises', path: '/exercises', icon: BookOpen },
+    { name: 'Settings', path: '/settings', icon: Settings },
   ];
-
-  const quickStats = [
-    { label: 'Today', value: '15 min', icon: Calendar },
-    { label: 'Streak', value: '7 days', icon: Award },
-    { label: 'Accuracy', value: '85%', icon: BarChart3 },
-  ];
-
-  const handleNavigation = (path) => {
-    navigate(path);
-  };
-
-  const toggleCollapse = () => {
-    setIsCollapsed(!isCollapsed);
-  };
 
   const isActive = (path) => location.pathname === path;
 
   return (
-    <div className={`bg-white border-r border-gray-200 h-full flex flex-col transition-all duration-300 ${
-      isCollapsed ? 'w-20' : 'w-64'
-    }`}>
-      {/* Header */}
-      <div className="p-6 border-b border-gray-200">
-        <div className={`flex items-center space-x-3 ${isCollapsed ? 'justify-center' : ''}`}>
-          <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center">
-            <Mic className="text-white" size={24} />
-          </div>
-          {!isCollapsed && (
-            <div className="flex-1">
-              <h1 className="text-xl font-bold text-gray-800">
-                Speech<span className="text-blue-500">Therapy</span>
-              </h1>
-              <p className="text-xs text-gray-500">AI Assistant</p>
-            </div>
-          )}
+    <aside 
+      className={`fixed left-0 top-0 h-screen bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transition-all duration-500 ease-in-out z-50 flex-col hidden md:flex ${
+        isCollapsed ? 'w-20' : 'w-64'
+      }`}
+    >
+      {/* Brand Logo */}
+      <div className="p-6 flex items-center gap-3 overflow-hidden">
+        <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30">
+          <Mic className="text-white" size={20} />
         </div>
+        {!isCollapsed && (
+          <div className="flex flex-col animate-fadeIn">
+            <span className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400">
+              SpeechTherapy
+            </span>
+            <span className="text-[10px] uppercase tracking-wider text-blue-500 font-bold">AI Assistant</span>
+          </div>
+        )}
       </div>
 
-      {/* User Profile */}
-      <div className="p-4 border-b border-gray-200">
-        <div className={`flex items-center space-x-3 ${isCollapsed ? 'justify-center' : ''}`}>
-          <div className="relative">
-            <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-blue-500 rounded-2xl flex items-center justify-center text-white font-bold text-lg">
-              {user.avatar ? (
-                <img src={user.avatar} alt="Profile" className="w-full h-full rounded-2xl object-cover" />
-              ) : (
-                user.name.charAt(0)
-              )}
-            </div>
-            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 border-2 border-white rounded-full"></div>
-          </div>
-          
-          {!isCollapsed && (
-            <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-gray-800 truncate">{user.name}</h3>
-              <p className="text-sm text-gray-500">{user.level}</p>
-              <div className="w-full bg-gray-200 rounded-full h-1.5 mt-1">
-                <div 
-                  className="bg-gradient-to-r from-green-400 to-blue-500 h-1.5 rounded-full transition-all duration-500"
-                  style={{ width: `${user.progress}%` }}
-                ></div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Quick Stats */}
-      {!isCollapsed && (
-        <div className="p-4 border-b border-gray-200">
-          <div className="grid grid-cols-3 gap-2">
-            {quickStats.map((stat, index) => {
-              const Icon = stat.icon;
-              return (
-                <div key={index} className="text-center p-2 bg-gray-50 rounded-lg">
-                  <Icon className="w-4 h-4 text-blue-500 mx-auto mb-1" />
-                  <div className="text-xs font-semibold text-gray-800">{stat.value}</div>
-                  <div className="text-xs text-gray-500">{stat.label}</div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-2">
+      {/* Navigation Links */}
+      <nav className="flex-1 px-4 space-y-2 mt-4">
         {navigation.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.path);
@@ -128,68 +64,68 @@ const Sidebar = ({ isOpen = true, onToggle }) => {
           return (
             <button
               key={item.name}
-              onClick={() => handleNavigation(item.path)}
-              className={`w-full flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 group ${
-                active
-                  ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg'
-                  : 'text-gray-600 hover:bg-blue-50 hover:text-blue-600'
-              } ${isCollapsed ? 'justify-center' : ''}`}
+              onClick={() => navigate(item.path)}
+              className={`w-full group flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-300 relative ${
+                active 
+                  ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' 
+                  : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50'
+              }`}
             >
-              <div className="relative">
-                <Icon size={20} />
-                {item.badge && (
-                  <span className={`absolute -top-2 -right-2 text-xs px-1.5 py-0.5 rounded-full ${
-                    active 
-                      ? 'bg-white text-purple-600' 
-                      : 'bg-red-500 text-white'
-                  }`}>
-                    {item.badge}
-                  </span>
-                )}
+              <div className={`p-2 rounded-lg transition-all duration-300 ${
+                active 
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-500/40' 
+                  : 'bg-transparent group-hover:bg-white dark:group-hover:bg-gray-800 shadow-none'
+              }`}>
+                <Icon size={18} />
               </div>
               
               {!isCollapsed && (
-                <>
-                  <span className="font-medium flex-1 text-left">{item.name}</span>
-                  {active && (
-                    <div className="w-2 h-2 bg-white rounded-full"></div>
-                  )}
-                </>
+                <span className="font-semibold text-sm whitespace-nowrap animate-fadeIn">
+                  {item.name}
+                </span>
+              )}
+
+              {item.badge && !isCollapsed && (
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 px-2 py-0.5 text-[10px] font-bold bg-red-500 text-white rounded-full animate-pulse">
+                  {item.badge}
+                </span>
+              )}
+
+              {/* Active Indicator */}
+              {active && (
+                <div className="absolute left-0 w-1 h-6 bg-blue-600 rounded-r-full shadow-[0_0_10px_rgba(37,99,235,0.5)]" />
               )}
             </button>
           );
         })}
       </nav>
 
-      {/* Footer */}
-      <div className="p-4 border-t border-gray-200 space-y-3">
-        {/* Toggle Button */}
+      {/* Bottom Actions */}
+      <div className="p-4 border-t border-gray-100 dark:border-gray-800 space-y-2">
         <button
-          onClick={toggleCollapse}
-          className="w-full flex items-center space-x-3 px-3 py-2 text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300"
         >
-          {isCollapsed ? (
-            <ChevronRight size={20} />
-          ) : (
-            <>
-              <ChevronLeft size={20} />
-              <span className="font-medium">Collapse</span>
-            </>
-          )}
+          <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
+            {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+          </div>
+          {!isCollapsed && <span className="text-sm font-semibold">Collapse Sidebar</span>}
         </button>
 
-        {/* Logout Button */}
         <button
-          onClick={() => navigate('/login')}
-          className={`w-full flex items-center space-x-3 px-3 py-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors ${
-            isCollapsed ? 'justify-center' : ''
-          }`}
+          onClick={() => {
+            localStorage.removeItem('token');
+            navigate('/login');
+          }}
+          className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-all duration-300"
         >
-          <LogOut size={20} />
-          {!isCollapsed && <span className="font-medium">Logout</span>}
+          <div className="p-2 bg-red-50 dark:bg-red-900/20 rounded-lg">
+            <LogOut size={18} />
+          </div>
+          {!isCollapsed && <span className="text-sm font-semibold">Logout</span>}
         </button>
       </div>
-    </div>
+    </aside>
   );
 };
 

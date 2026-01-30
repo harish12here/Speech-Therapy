@@ -1,3 +1,4 @@
+#backend\src\database\models.py
 from beanie import Document, Indexed
 from pydantic import Field, EmailStr
 from typing import Optional, List, Dict
@@ -45,12 +46,29 @@ class User(Document):
     
     # Profile information
     avatar_url: Optional[str] = None
+    phone: Optional[str] = None
+    location: Optional[str] = None
+    gender: Optional[str] = "male"
     parent_id: Optional[str] = None  # For child accounts
     therapist_id: Optional[str] = None  # Assigned therapist
     
-    # Settings
+    # Settings & Preferences
     notification_enabled: bool = True
     sound_enabled: bool = True
+    daily_goal: int = 20  # minutes
+    reminder_time: str = "18:00"
+    weekly_report: bool = True
+    achievement_alerts: bool = True
+    practice_reminders: bool = True
+    
+    # Privacy & Security
+    profile_visibility: str = "private"
+    share_progress: bool = False
+    data_collection: bool = True
+    two_factor_auth: bool = False
+    session_history_enabled: bool = True
+    biometric_login: bool = False
+    cookies_enabled: bool = True
     
     class Settings:
         name = "users"

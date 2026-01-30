@@ -5,6 +5,7 @@
 @layer base {
   :root {
     color-scheme: light;
+    --font-primary: 'Outfit', 'Inter', sans-serif;
   }
   
   html.dark {
@@ -13,10 +14,32 @@
 
   body {
     @apply bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100 transition-colors duration-300;
+    font-family: var(--font-primary);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply tracking-tight font-bold;
   }
 }
 
-/* Add these to your src/index.css file */
+/* Custom typography utilities for consistent premium feel */
+@layer utilities {
+  .text-premium-h1 {
+    @apply text-3xl md:text-4xl font-black tracking-tighter uppercase;
+  }
+  
+  .text-premium-h2 {
+    @apply text-xl md:text-2xl font-black tracking-tight;
+  }
+  
+  .text-premium-label {
+    @apply text-[10px] font-black uppercase tracking-[0.2em] text-gray-400;
+  }
+  
+  .text-premium-body {
+    @apply text-sm md:text-base font-medium text-gray-500 dark:text-gray-400;
+  }
+}
 
 /* Custom animations */
 @keyframes fadeIn {
@@ -36,15 +59,11 @@
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
-}
-
-html.dark ::-webkit-scrollbar-track {
-  background: #1f2937;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -58,25 +77,36 @@ html.dark ::-webkit-scrollbar-track {
 
 /* Glass morphism effect */
 .glass-effect {
-  background: rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  @apply bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl border border-white/20 dark:border-gray-800;
 }
 
 /* Smooth transitions */
 * {
-  transition: all 0.2s ease-in-out;
-}/* Glass morphism effects */
-.backdrop-blur-sm {
-  backdrop-filter: blur(8px);
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s, transform 0.2s, box-shadow 0.2s;
 }
 
-/* Smooth transitions */
-* {
-  transition: all 0.3s ease-in-out;
+/* Safe areas for modern mobile devices */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
-/* Gradient text */
+/* Hide scrollbar utility */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Prevent horizontal overflow globally */
+html, body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  touch-action: pan-y;
+  -webkit-tap-highlight-color: transparent;
+}
+
 .text-gradient {
   background: linear-gradient(135deg, #3b82f6, #8b5cf6);
   -webkit-background-clip: text;

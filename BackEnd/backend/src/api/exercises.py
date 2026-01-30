@@ -1,3 +1,4 @@
+#backend/src/api/exercises.py
 from fastapi import APIRouter, HTTPException, Depends, status
 from typing import List, Optional
 from datetime import datetime

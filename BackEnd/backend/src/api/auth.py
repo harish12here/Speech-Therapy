@@ -1,3 +1,4 @@
+#backend/src/api/auth.py
 from fastapi import APIRouter, HTTPException, Depends, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from datetime import datetime, timedelta
@@ -176,7 +177,22 @@ async def get_me(current_user: User = Depends(get_current_active_user)):
         regional_language=current_user.regional_language,
         is_active=current_user.is_active,
         created_at=current_user.created_at,
-        avatar_url=current_user.avatar_url
+        avatar_url=current_user.avatar_url,
+        phone=current_user.phone,
+        location=current_user.location,
+        gender=current_user.gender,
+        daily_goal=current_user.daily_goal,
+        reminder_time=current_user.reminder_time,
+        weekly_report=current_user.weekly_report,
+        achievement_alerts=current_user.achievement_alerts,
+        practice_reminders=current_user.practice_reminders,
+        profile_visibility=current_user.profile_visibility,
+        share_progress=current_user.share_progress,
+        data_collection=current_user.data_collection,
+        two_factor_auth=current_user.two_factor_auth,
+        session_history_enabled=current_user.session_history_enabled,
+        biometric_login=current_user.biometric_login,
+        cookies_enabled=current_user.cookies_enabled
     )
 
 @router.put("/me", response_model=UserResponse)
@@ -189,14 +205,13 @@ async def update_me(
     print(f"DEBUG: Received update data: {update_data}")
     
     if update_data:
-        # Update fields
+        # Update user document fields directly from validated update_data
         for field, value in update_data.items():
-            if hasattr(current_user, field):
-                print(f"DEBUG: Updating {field} from {getattr(current_user, field)} to {value}")
-                setattr(current_user, field, value)
+            print(f"DEBUG: Setting {field} = {value}")
+            setattr(current_user, field, value)
         
         await current_user.save()
-        print("DEBUG: User saved successfully")
+        print(f"DEBUG: User {current_user.email} saved successfully")
         
     return UserResponse(
         id=str(current_user.id),
@@ -208,7 +223,22 @@ async def update_me(
         regional_language=current_user.regional_language,
         is_active=current_user.is_active,
         created_at=current_user.created_at,
-        avatar_url=current_user.avatar_url
+        avatar_url=current_user.avatar_url,
+        phone=current_user.phone,
+        location=current_user.location,
+        gender=current_user.gender,
+        daily_goal=current_user.daily_goal,
+        reminder_time=current_user.reminder_time,
+        weekly_report=current_user.weekly_report,
+        achievement_alerts=current_user.achievement_alerts,
+        practice_reminders=current_user.practice_reminders,
+        profile_visibility=current_user.profile_visibility,
+        share_progress=current_user.share_progress,
+        data_collection=current_user.data_collection,
+        two_factor_auth=current_user.two_factor_auth,
+        session_history_enabled=current_user.session_history_enabled,
+        biometric_login=current_user.biometric_login,
+        cookies_enabled=current_user.cookies_enabled
     )
 
 @router.post("/logout")
@@ -268,13 +298,18 @@ async def get_dashboard_stats(current_user: User = Depends(get_current_active_us
                  "time": s.timestamp
              })
              
-    # 3. Get Streak (Mock for now or check Progress)
-    current_streak = 0
-    # Check today's progress
+    # 3. Get Streak & Badges from Progress
+    progress = await Progress.find_one(Progress.user_id == user_id)
+    current_streak = progress.current_streak if progress else 0
+    badges = progress.badges if progress else []
+    total_exercises = progress.total_exercises_completed if progress else completed_sessions_count
+    accuracy = progress.average_score if progress else 0
     
     return {
-        "completed_exercises": completed_sessions_count,
+        "completed_exercises": total_exercises,
         "total_points": total_points_earned,
         "current_streak": current_streak,
+        "accuracy": accuracy,
+        "badges": badges,
         "recent_activity": recent_activity
     }

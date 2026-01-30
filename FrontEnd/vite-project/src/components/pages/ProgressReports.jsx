@@ -1,3 +1,4 @@
+//src/components/pages/ProgressReports.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -5,7 +6,6 @@ import {
   Tooltip, Legend, ResponsiveContainer,  Cell 
 } from 'recharts';
 import { Download, Calendar, TrendingUp, Award, Clock, Volume2, AlertCircle, Loader2 } from 'lucide-react';
-import Header from '../common/Header';
 import { 
   getProgressStats, 
   getWeeklyProgress, 
@@ -147,12 +147,8 @@ const ProgressReports = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors duration-300">
-      <div className="no-print">
-        <Header />
-      </div>
-      
-      <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    <>
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8">
           <div>
@@ -372,7 +368,7 @@ const ProgressReports = () => {
           onClose={closeModal} 
         />
       )}
-    </div>
+    </>
   );
 };
 

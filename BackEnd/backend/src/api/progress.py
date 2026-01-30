@@ -1,7 +1,8 @@
+#backend/src/api/progress.py
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List, Dict, Any
 from datetime import datetime, timedelta
-from src.database.models import User, Session, Progress
+from src.database.models import User, Session, Progress, Exercise
 from src.database.schemas import UserStatistics, SessionResponse, ProgressResponse
 from src.api.auth import get_current_active_user
 

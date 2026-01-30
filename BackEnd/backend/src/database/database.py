@@ -1,3 +1,4 @@
+#backend\src\database\database.py
 from motor.motor_asyncio import AsyncIOMotorClient
 from beanie import init_beanie
 from src.config import settings

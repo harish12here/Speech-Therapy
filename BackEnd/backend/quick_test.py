@@ -1,3 +1,4 @@
+# quick_test.py
 """
 Quick Test Script - Verify Core Functionality
 Run this to quickly check if everything is working

@@ -1,3 +1,4 @@
+#backend/src/api/speech.py
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Depends
 import tempfile
 import os
@@ -75,11 +76,11 @@ async def analyze_speech(
             exercise_id=exercise_id,
             audio_url=f"/uploads/{os.path.basename(temp_path)}", # Placeholder URL
             duration=duration,
-            pronunciation_score=analysis_result["pronunciation_score"],
+            pronunciation_score=analysis_result["overall_score"],
             pitch_score=analysis_result["pitch_analysis"]["score"],
             fluency_score=analysis_result["fluency_score"],
-            confidence_score=analysis_result.get("fluency_score", 0) * 0.9, # Approximate confidence
-            overall_score=analysis_result["pronunciation_score"], # Map pronunciation to overall for consistency
+            confidence_score=analysis_result.get("acoustic_confidence", 0) * 100, # Use actual model confidence
+            overall_score=analysis_result["overall_score"], 
             mispronounced_phonemes=analysis_result["mispronounced_phonemes"],
             pitch_contour=analysis_result["pitch_analysis"],
             ai_feedback=analysis_result["feedback"],

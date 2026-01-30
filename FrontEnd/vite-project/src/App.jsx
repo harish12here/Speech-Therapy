@@ -1,3 +1,4 @@
+//src/components/pages/App.jsx
 import React from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import Login from './components/pages/Login'
@@ -8,6 +9,7 @@ import ProgressReports from './components/pages/ProgressReports'
 import ExerciseLibrary from './components/pages/ExerciseLibrary'
 import Settings from './components/pages/Settings'
 import VideoActivityAnalysis from './components/pages/VideoActivityAnalysis'
+import Layout from './components/common/Layout'
 import { ThemeProvider } from './context/ThemeContext'
 import './App.css'
 
@@ -25,63 +27,60 @@ function App() {
   return (
     <ThemeProvider>
       <Router>
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors duration-300">
-          <Routes>
-            {/* ... routes remain same ... */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            
-            <Route 
-              path="/dashboard" 
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/therapy" 
-              element={
-                <ProtectedRoute>
-                  <TherapySession />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/progress" 
-              element={
-                <ProtectedRoute>
-                  <ProgressReports />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/exercises" 
-              element={
-                <ProtectedRoute>
-                  <ExerciseLibrary />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/settings" 
-              element={
-                <ProtectedRoute>
-                  <Settings />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/video-analysis" 
-              element={
-                <ProtectedRoute>
-                  <VideoActivityAnalysis />
-                </ProtectedRoute>
-              } 
-            />
-          </Routes>
-        </div>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          
+          <Route 
+            path="/dashboard" 
+            element={
+              <ProtectedRoute>
+                <Layout><Dashboard /></Layout>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/therapy" 
+            element={
+              <ProtectedRoute>
+                <Layout><TherapySession /></Layout>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/progress" 
+            element={
+              <ProtectedRoute>
+                <Layout><ProgressReports /></Layout>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/exercises" 
+            element={
+              <ProtectedRoute>
+                <Layout><ExerciseLibrary /></Layout>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/settings" 
+            element={
+              <ProtectedRoute>
+                <Layout><Settings /></Layout>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/video-analysis" 
+            element={
+              <ProtectedRoute>
+                <Layout><VideoActivityAnalysis /></Layout>
+              </ProtectedRoute>
+            } 
+          />
+        </Routes>
       </Router>
     </ThemeProvider>
   )

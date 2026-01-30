@@ -1,3 +1,4 @@
+# seed_database.py  
 """
 Seed script to populate MongoDB with sample speech therapy data
 Run this after setting up the database to get started with sample exercises
@@ -206,7 +207,239 @@ SAMPLE_EXERCISES = [
         "tags": ["tamil", "phoneme", "dental"],
         "points": 15,
         "is_active": True
+    },     # Tamil – Easy
+    {
+        "title": "அப்பா - Say 'Appa' (Father)",
+        "description": "Practice saying the word for father in Tamil",
+        "target_word": "அப்பா",
+        "target_phoneme": "p",
+        "difficulty": "easy",
+        "exercise_type": "word",
+        "language": "ta",
+        "instructions": [
+            "Look at the picture of a father",
+            "Press lips together",
+            "Release air gently",
+            "Say 'அப்பா'"
+        ],
+        "tips": [
+            "Clear lip movement",
+            "Do not rush",
+            "Repeat slowly"
+        ],
+        "mouth_position_guide": "Lips close and open gently with airflow",
+        "tags": ["tamil", "family", "basic"],
+        "points": 10,
+        "is_active": True
+    },
+    {
+        "title": "பால் - Say 'Paal' (Milk)",
+        "description": "Practice long vowel sound with 'l'",
+        "target_word": "பால்",
+        "target_phoneme": "l",
+        "difficulty": "easy",
+        "exercise_type": "word",
+        "language": "ta",
+        "instructions": [
+            "Say 'paa' slowly",
+            "Hold the long sound",
+            "Finish with 'l'"
+        ],
+        "tips": [
+            "Stretch the vowel",
+            "Clear tongue movement"
+        ],
+        "mouth_position_guide": "Tongue touches upper ridge lightly",
+        "tags": ["tamil", "food", "basic"],
+        "points": 10,
+        "is_active": True
+    },
+
+    # English – Easy
+    {
+        "title": "Dog - Practice 'D' Sound",
+        "description": "Learn the 'd' sound",
+        "target_word": "dog",
+        "target_phoneme": "d",
+        "difficulty": "easy",
+        "exercise_type": "word",
+        "language": "en",
+        "instructions": [
+            "Touch tongue to upper teeth",
+            "Release with voice",
+            "Say 'dog'"
+        ],
+        "tips": [
+            "Voiced sound",
+            "Quick tongue release"
+        ],
+        "mouth_position_guide": "Tongue touches alveolar ridge then releases",
+        "tags": ["english", "animals", "basic"],
+        "points": 10,
+        "is_active": True
+    },
+    {
+        "title": "Fish - Practice 'F' Sound",
+        "description": "Learn the 'f' sound",
+        "target_word": "fish",
+        "target_phoneme": "f",
+        "difficulty": "easy",
+        "exercise_type": "word",
+        "language": "en",
+        "instructions": [
+            "Bite lower lip gently",
+            "Blow air",
+            "Say 'fish'"
+        ],
+        "tips": [
+            "No voice initially",
+            "Steady airflow"
+        ],
+        "mouth_position_guide": "Upper teeth touch lower lip, air flows out",
+        "tags": ["english", "animals", "basic"],
+        "points": 10,
+        "is_active": True
+    },
+
+    # Tamil – Medium
+    {
+        "title": "மரம் - Say 'Maram' (Tree)",
+        "description": "Practice rolling 'r' sound in Tamil",
+        "target_word": "மரம்",
+        "target_phoneme": "r",
+        "difficulty": "medium",
+        "exercise_type": "word",
+        "language": "ta",
+        "instructions": [
+            "Tap tongue quickly",
+            "Say 'ma-ram'",
+            "Repeat clearly"
+        ],
+        "tips": [
+            "Light tongue tap",
+            "Do not force"
+        ],
+        "mouth_position_guide": "Tongue taps roof quickly",
+        "tags": ["tamil", "nature"],
+        "points": 15,
+        "is_active": True
+    },
+    {
+        "title": "நடனம் - Say 'Nadanam' (Dance)",
+        "description": "Practice nasal 'n' sound",
+        "target_word": "நடனம்",
+        "target_phoneme": "n",
+        "difficulty": "medium",
+        "exercise_type": "word",
+        "language": "ta",
+        "instructions": [
+            "Hum softly",
+            "Say 'na'",
+            "Complete the word"
+        ],
+        "tips": [
+            "Sound through nose",
+            "Keep it smooth"
+        ],
+        "mouth_position_guide": "Tongue touches upper ridge, air through nose",
+        "tags": ["tamil", "arts"],
+        "points": 15,
+        "is_active": True
+    },
+
+    # English – Medium
+    {
+        "title": "Water - Practice 'W' Sound",
+        "description": "Learn lip rounding",
+        "target_word": "water",
+        "target_phoneme": "w",
+        "difficulty": "medium",
+        "exercise_type": "word",
+        "language": "en",
+        "instructions": [
+            "Round lips",
+            "Push voice forward",
+            "Say 'water'"
+        ],
+        "tips": [
+            "No teeth touching",
+            "Smooth sound"
+        ],
+        "mouth_position_guide": "Rounded lips with voiced airflow",
+        "tags": ["english", "daily"],
+        "points": 15,
+        "is_active": True
+    },
+    {
+        "title": "Chair - Practice 'Ch' Sound",
+        "description": "Practice affricate sound",
+        "target_word": "chair",
+        "target_phoneme": "ch",
+        "difficulty": "medium",
+        "exercise_type": "word",
+        "language": "en",
+        "instructions": [
+            "Start with 't'",
+            "Release into 'sh'",
+            "Say 'chair'"
+        ],
+        "tips": [
+            "Strong start",
+            "Clear ending"
+        ],
+        "mouth_position_guide": "Tongue behind teeth, burst then airflow",
+        "tags": ["english", "objects"],
+        "points": 15,
+        "is_active": True
+    },
+
+    # Sentence – Medium
+    {
+        "title": "Sentence: I like apples",
+        "description": "Practice smooth sentence flow",
+        "target_word": "I like apples",
+        "target_phoneme": "l",
+        "difficulty": "medium",
+        "exercise_type": "sentence",
+        "language": "en",
+        "instructions": [
+            "Say each word separately",
+            "Focus on 'l'",
+            "Join smoothly"
+        ],
+        "tips": [
+            "Clear word boundaries",
+            "Natural pace"
+        ],
+        "tags": ["english", "sentences"],
+        "points": 15,
+        "is_active": True
+    },
+
+    # Phoneme Focus
+    {
+        "title": "க - 'Ka' Sound Practice",
+        "description": "Practice Tamil 'க' sound",
+        "target_word": "க",
+        "target_phoneme": "k",
+        "difficulty": "easy",
+        "exercise_type": "phoneme",
+        "language": "ta",
+        "instructions": [
+            "Lift back of tongue",
+            "Release air",
+            "Repeat ka, ki, ku"
+        ],
+        "tips": [
+            "Sharp release",
+            "Back of mouth sound"
+        ],
+        "mouth_position_guide": "Back of tongue touches soft palate",
+        "tags": ["tamil", "phoneme"],
+        "points": 10,
+        "is_active": True
     }
+
 ]
 
 async def seed_database():
@@ -221,9 +454,9 @@ async def seed_database():
         
         print(f"✅ Connected to MongoDB: {settings.MONGODB_DATABASE}")
         
-        # Clear existing exercises (optional - comment out if you want to keep existing)
-        # await db.exercises.delete_many({})
-        # print("🗑️  Cleared existing exercises")
+        # Clear existing exercises
+        await db.exercises.delete_many({})
+        print("🗑️  Cleared existing exercises")
         
         # Insert sample exercises
         exercises_collection = db.exercises

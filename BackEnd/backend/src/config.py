@@ -1,3 +1,4 @@
+# backend\src\config.py
 from pydantic_settings import BaseSettings
 from typing import List
 import os
@@ -36,11 +37,13 @@ class Settings(BaseSettings):
     MAX_UPLOAD_SIZE: int = 10 * 1024 * 1024  # 10MB
     
     # AI Model Settings
-    WAV2VEC_MODEL: str = "facebook/wav2vec2-base-960h"
+    WAV2VEC_MODEL: str = "facebook/wav2vec2-large-xlsr-53"
+    WAV2VEC2_MODEL_NAME: str = "facebook/wav2vec2-large-xlsr-53"
+    
     REGIONAL_LANGUAGE_MODELS: dict = {
-        "ta": "tamil-wav2vec2",  # Tamil
-        "hi": "hindi-wav2vec2",  # Hindi
-        "te": "telugu-wav2vec2",  # Telugu
+        "ta": "facebook/wav2vec2-large-xlsr-53",  # Supports Tamil out of the box
+        "hi": "facebook/wav2vec2-large-xlsr-53",  # Supports Hindi
+        "te": "facebook/wav2vec2-large-xlsr-53",  # Supports Telugu
     }
     
     # Speech Analysis Thresholds
@@ -50,5 +53,6 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         case_sensitive = True
+        extra = "ignore" # Allow extra env vars like PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
 
 settings = Settings()

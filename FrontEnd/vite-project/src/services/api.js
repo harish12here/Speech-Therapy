@@ -1,3 +1,4 @@
+//src/services/api.js
 import axios from 'axios';
 
 // Base URL for the FastAPI Backend
@@ -44,13 +45,9 @@ api.interceptors.response.use(
 
 export const loginUser = async (email, password) => {
     try {
-        // Use the form-data login endpoint (OAuth2 standard)
         const formData = new URLSearchParams();
         formData.append('username', email);
         formData.append('password', password);
-
-        // Or use the JSON endpoint we created
-        // const response = await api.post('/auth/login/json', { email, password });
         
         const response = await api.post('/auth/login', formData, {
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
@@ -70,42 +67,30 @@ export const loginUser = async (email, password) => {
 };
 
 export const getUserStats = async () => {
-    try {
-        const response = await api.get('/auth/stats');
-        return response.data;
-    } catch (error) {
-        throw error.response ? error.response.data : error;
-    }
+    const response = await api.get('/auth/stats');
+    return response.data;
 };
 
 export const analyzeSpeech = async (audioBlob, exerciseId) => {
-    try {
-        const formData = new FormData();
-        const filename = audioBlob.name || 'recording.wav';
-        formData.append('audio', audioBlob, filename);
-        
-        if (exerciseId) {
-            formData.append('exercise_id', exerciseId);
-        }
-        
-        const response = await api.post('/speech/analyze', formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
-        });
-        return response.data;
-    } catch (error) {
-        throw error.response ? error.response.data : error;
+    const formData = new FormData();
+    const filename = audioBlob.name || 'recording.wav';
+    formData.append('audio', audioBlob, filename);
+    
+    if (exerciseId) {
+        formData.append('exercise_id', exerciseId);
     }
+    
+    const response = await api.post('/speech/analyze', formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+    });
+    return response.data;
 };
 
 export const registerUser = async (userData) => {
-    try {
-        const response = await api.post('/auth/register', userData);
-        return response.data;
-    } catch (error) {
-        throw error.response ? error.response.data : error;
-    }
+    const response = await api.post('/auth/register', userData);
+    return response.data;
 };
 
 export const logoutUser = () => {
@@ -114,110 +99,69 @@ export const logoutUser = () => {
 };
 
 export const getCurrentUser = async () => {
-    try {
-        const response = await api.get('/auth/me');
-        return response.data;
-    } catch (error) {
-        throw error;
-    }
+    const response = await api.get('/auth/me');
+    return response.data;
 };
 
 export const updateUserProfile = async (updateData) => {
-    try {
-        const response = await api.put('/auth/me', updateData);
-        return response.data;
-    } catch (error) {
-        throw error.response ? error.response.data : error;
-    }
+    const response = await api.put('/auth/me', updateData);
+    return response.data;
 };
 
 // --- Exercise Services ---
 
 export const getExercises = async (filters = {}) => {
-    try {
-        // filters can be { language: 'ta', difficulty: 'easy' }
-        const params = new URLSearchParams(filters).toString();
-        const response = await api.get(`/exercises/?${params}`);
-        return response.data;
-    } catch (error) {
-        throw error;
-    }
+    // filters can be { language: 'ta', difficulty: 'easy' }
+    const params = new URLSearchParams(filters).toString();
+    const response = await api.get(`/exercises/?${params}`);
+    return response.data;
 };
 
 export const getExerciseById = async (id) => {
-    try {
-        const response = await api.get(`/exercises/${id}`);
-        return response.data;
-    } catch (error) {
-        throw error;
-    }
+    const response = await api.get(`/exercises/${id}`);
+    return response.data;
 };
 
 
 export const analyzeVideo = async (videoFile) => {
-    try {
-        console.log('Uploading video for analysis...', videoFile.name);
-        const formData = new FormData();
-        formData.append('video', videoFile);
-        
-        const response = await api.post('/video/analyze', formData, {
-            headers: {
-                'Content-Type': undefined, 
-            },
-        });
-        console.log('Analysis response:', response.data);
-        return response.data;
-    } catch (error) {
-        console.error('Video analysis error:', error);
-        throw error.response ? error.response.data : error;
-    }
+    console.log('Uploading video for analysis...', videoFile.name);
+    const formData = new FormData();
+    formData.append('video', videoFile);
+    
+    const response = await api.post('/video/analyze', formData, {
+        headers: {
+            'Content-Type': undefined, 
+        },
+    });
+    console.log('Analysis response:', response.data);
+    return response.data;
 };
 
 // --- Progress Services ---
 
 export const getProgressStats = async () => {
-    try {
-        const response = await api.get('/progress/stats');
-        return response.data;
-    } catch (error) {
-        throw error;
-    }
+    const response = await api.get('/progress/stats');
+    return response.data;
 };
 
 export const getWeeklyProgress = async () => {
-    try {
-        const response = await api.get('/progress/weekly');
-        return response.data;
-    } catch (error) {
-        throw error;
-    }
+    const response = await api.get('/progress/weekly');
+    return response.data;
 };
 
 export const getPhonemeMastery = async () => {
-    try {
-        const response = await api.get('/progress/phonemes');
-        return response.data;
-    } catch (error) {
-        throw error;
-    }
+    const response = await api.get('/progress/phonemes');
+    return response.data;
 };
 
 export const getSessionHistory = async () => {
-    try {
-        const response = await api.get('/progress/history');
-        return response.data;
-    } catch (error) {
-        throw error;
-    }
+    const response = await api.get('/progress/history');
+    return response.data;
 };
 
 export const getRecommendations = async () => {
-    try {
-        const response = await api.get('/progress/recommendations');
-        return response.data;
-    } catch (error) {
-        throw error;
-    }
+    const response = await api.get('/progress/recommendations');
+    return response.data;
 };
 
 export default api;

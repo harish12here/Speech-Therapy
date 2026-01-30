@@ -1,3 +1,4 @@
+//src/components/dashboard/SessionDetailsModal.jsx
 import React from 'react';
 import { X, Calendar, Clock, Trophy, AlertCircle, CheckCircle2, FileText, Activity } from 'lucide-react';
 
