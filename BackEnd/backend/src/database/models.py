@@ -61,6 +61,25 @@ class User(Document):
     achievement_alerts: bool = True
     practice_reminders: bool = True
     
+    # Advanced Notification Settings
+    push_notifications: bool = True
+    email_notifications: bool = True
+    sms_notifications: bool = False
+    marketing_emails: bool = False
+    session_reminders: bool = True
+    reminder_lead_time: int = 15
+    
+    # Audio Settings
+    microphone_id: str = "default"
+    speaker_id: str = "default"
+    input_volume: int = 75
+    output_volume: int = 80
+    noise_cancellation: bool = True
+    echo_cancellation: bool = True
+    auto_gain: bool = True
+    sample_rate: int = 16000
+    audio_quality: str = "high"
+    
     # Privacy & Security
     profile_visibility: str = "private"
     share_progress: bool = False
@@ -189,6 +208,9 @@ class Progress(Document):
     total_points: int = 0
     badges: List[str] = []
     current_streak: int = 0  # days
+    
+    # Fluency by language
+    fluency_by_language: Dict[str, float] = {}
     longest_streak: int = 0
     
     # Exercise breakdown

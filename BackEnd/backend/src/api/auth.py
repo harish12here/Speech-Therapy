@@ -186,6 +186,21 @@ async def get_me(current_user: User = Depends(get_current_active_user)):
         weekly_report=current_user.weekly_report,
         achievement_alerts=current_user.achievement_alerts,
         practice_reminders=current_user.practice_reminders,
+        push_notifications=current_user.push_notifications,
+        email_notifications=current_user.email_notifications,
+        sms_notifications=current_user.sms_notifications,
+        marketing_emails=current_user.marketing_emails,
+        session_reminders=current_user.session_reminders,
+        reminder_lead_time=current_user.reminder_lead_time,
+        microphone_id=current_user.microphone_id,
+        speaker_id=current_user.speaker_id,
+        input_volume=current_user.input_volume,
+        output_volume=current_user.output_volume,
+        noise_cancellation=current_user.noise_cancellation,
+        echo_cancellation=current_user.echo_cancellation,
+        auto_gain=current_user.auto_gain,
+        sample_rate=current_user.sample_rate,
+        audio_quality=current_user.audio_quality,
         profile_visibility=current_user.profile_visibility,
         share_progress=current_user.share_progress,
         data_collection=current_user.data_collection,
@@ -232,6 +247,20 @@ async def update_me(
         weekly_report=current_user.weekly_report,
         achievement_alerts=current_user.achievement_alerts,
         practice_reminders=current_user.practice_reminders,
+        push_notifications=current_user.push_notifications,
+        email_notifications=current_user.email_notifications,
+        sms_notifications=current_user.sms_notifications,
+        session_reminders=current_user.session_reminders,
+        reminder_lead_time=current_user.reminder_lead_time,
+        microphone_id=current_user.microphone_id,
+        speaker_id=current_user.speaker_id,
+        input_volume=current_user.input_volume,
+        output_volume=current_user.output_volume,
+        noise_cancellation=current_user.noise_cancellation,
+        echo_cancellation=current_user.echo_cancellation,
+        auto_gain=current_user.auto_gain,
+        sample_rate=current_user.sample_rate,
+        audio_quality=current_user.audio_quality,
         profile_visibility=current_user.profile_visibility,
         share_progress=current_user.share_progress,
         data_collection=current_user.data_collection,
@@ -304,6 +333,7 @@ async def get_dashboard_stats(current_user: User = Depends(get_current_active_us
     badges = progress.badges if progress else []
     total_exercises = progress.total_exercises_completed if progress else completed_sessions_count
     accuracy = progress.average_score if progress else 0
+    fluency_by_language = progress.fluency_by_language if progress else {}
     
     return {
         "completed_exercises": total_exercises,
@@ -311,5 +341,6 @@ async def get_dashboard_stats(current_user: User = Depends(get_current_active_us
         "current_streak": current_streak,
         "accuracy": accuracy,
         "badges": badges,
-        "recent_activity": recent_activity
+        "recent_activity": recent_activity,
+        "fluency_by_language": fluency_by_language
     }

@@ -40,17 +40,31 @@ class Wav2Vec2SpeechModel:
 
     def __init__(
         self,
-        model_name: str = "facebook/wav2vec2-large-xlsr-53",
+        model_name: Optional[str] = None,
         device: Optional[str] = None,
-        cache_dir: Optional[str] = None
+        cache_dir: Optional[str] = None,
+        language: str = "english"
     ):
         """
         Initialize the Wav2Vec2 model.
         """
+        self.language = (language or "english").lower()
+
+        # Choose a recommended model per language if none provided
+        recommended_models = {
+            "english": "jonatasgrosman/wav2vec2-large-xlsr-53-english",
+            # XLSR-53 is a strong multilingual backbone; keep as fallback
+            "tamil": "facebook/wav2vec2-large-xlsr-53",
+            "multilingual": "facebook/wav2vec2-large-xlsr-53",
+        }
+
+        if model_name is None:
+            model_name = recommended_models.get(self.language, "facebook/wav2vec2-large-xlsr-53")
+
         self.model_name = model_name
         self.device = device or ('cuda' if torch.cuda.is_available() else 'cpu')
-        
-        logger.info(f"Loading Wav2Vec2 model: {model_name} on {self.device}")
+
+        logger.info(f"Loading Wav2Vec2 model: {self.model_name} on {self.device} (language={self.language})")
 
         try:
             # Load processor and model
@@ -165,10 +179,13 @@ class Wav2Vec2SpeechModel:
         
         # Detailed phoneme/character analysis
         phoneme_reports = []
+        phonetic_groups = [
+            set(['p', 'b']), set(['t', 'd']), set(['k', 'g']),
+            set(['s', 'z']), set(['f', 'v']), set(['m', 'n']),
+            set(['i', 'e']), set(['o', 'u']), set(['a', 'e'])
+        ]
+        
         for tag, i1, i2, j1, j2 in matcher.get_opcodes():
-            # target_norm[i1:i2] is the expected part
-            # trans_norm[j1:j2] is what was actually said
-            
             part_expected = target_norm[i1:i2]
             part_actual = trans_norm[j1:j2]
             
@@ -176,22 +193,30 @@ class Wav2Vec2SpeechModel:
                 score = 1.0
                 status = "correct"
             elif tag == 'replace':
-                score = 0.4
+                # Check for phonetic similarity
+                if len(part_expected) == 1 and len(part_actual) == 1:
+                    e, a = part_expected[0], part_actual[0]
+                    is_similar = any(e in g and a in g for g in phonetic_groups)
+                    score = 0.75 if is_similar else 0.4
+                else:
+                    score = 0.4
                 status = "distorted"
             elif tag == 'delete':
                 score = 0.0
                 status = "omitted"
             elif tag == 'insert':
-                # Unexpected sounds added
-                continue 
+                continue # insertion handled by general match_ratio
                 
             if part_expected.strip():
-                phoneme_reports.append({
-                    "expected": part_expected,
-                    "actual": part_actual,
-                    "score": score,
-                    "status": status
-                })
+                # For words with multiple characters, split them up for granular reporting
+                for char in part_expected:
+                    if char.strip():
+                        phoneme_reports.append({
+                            "expected": char,
+                            "actual": part_actual if len(part_expected) == 1 else "?",
+                            "score": score,
+                            "status": status
+                        })
 
         # Calculate weighted overall score
         # Combination of match ratio and model's acoustic confidence
@@ -269,9 +294,11 @@ def get_wav2vec2_model(force_reload: bool = False) -> Wav2Vec2SpeechModel:
     Downloads the model on first call.
     """
     global _model_instance
+    import os
+    model_name = os.getenv("WAV2VEC2_MODEL_NAME")
+    language = os.getenv("WAV2VEC2_LANGUAGE", "english")
+
     if _model_instance is None or force_reload:
-        # Check environment for model name override
-        import os
-        model_name = os.getenv("WAV2VEC2_MODEL_NAME", "facebook/wav2vec2-large-xlsr-53")
-        _model_instance = Wav2Vec2SpeechModel(model_name=model_name)
+        _model_instance = Wav2Vec2SpeechModel(model_name=model_name, language=language)
+
     return _model_instance

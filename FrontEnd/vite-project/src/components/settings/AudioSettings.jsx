@@ -25,10 +25,18 @@ const AudioSettings = ({ saveTrigger, onSaveComplete }) => {
         setLoading(true);
         const user = await getCurrentUser();
         if (user) {
-          setSettings(prev => ({
-            ...prev,
+          setSettings({
+            microphone: user.microphone_id || 'default',
+            speakers: user.speaker_id || 'default',
+            inputVolume: user.input_volume ?? 75,
+            outputVolume: user.output_volume ?? 80,
+            noiseCancellation: user.noise_cancellation ?? true,
+            echoCancellation: user.echo_cancellation ?? true,
+            autoGain: user.auto_gain ?? true,
+            sampleRate: user.sample_rate || 16000,
+            audioQuality: user.audio_quality || 'high',
             soundEnabled: user.sound_enabled ?? true
-          }));
+          });
         }
       } catch (err) {
         console.error("Failed to fetch audio settings", err);
@@ -48,8 +56,19 @@ const AudioSettings = ({ saveTrigger, onSaveComplete }) => {
   const handleSave = async () => {
     try {
       await updateUserProfile({
+        microphone_id: settings.microphone,
+        speaker_id: settings.speakers,
+        input_volume: settings.inputVolume,
+        output_volume: settings.outputVolume,
+        noise_cancellation: settings.noiseCancellation,
+        echo_cancellation: settings.echoCancellation,
+        auto_gain: settings.autoGain,
+        sample_rate: parseInt(settings.sampleRate),
+        audio_quality: settings.audioQuality,
         sound_enabled: settings.soundEnabled
       });
+      
+      // Also save to localStorage for immediate use by audio services
       localStorage.setItem('audioSettings', JSON.stringify(settings));
 
       const successEvent = new CustomEvent('showNotification', {
@@ -63,6 +82,14 @@ const AudioSettings = ({ saveTrigger, onSaveComplete }) => {
       if (onSaveComplete) onSaveComplete();
     } catch (err) {
       console.error("Failed to save audio settings", err);
+      const errorEvent = new CustomEvent('showNotification', {
+        detail: { 
+          message: 'Failed to update audio settings', 
+          type: 'error' 
+        }
+      });
+      window.dispatchEvent(errorEvent);
+      if (onSaveComplete) onSaveComplete();
     }
   };
 

@@ -25,25 +25,37 @@ const Settings = () => {
     return () => window.removeEventListener('showNotification', handleNotification);
   }, []);
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const user = await getCurrentUser();
-        setUserData(user);
-      } catch (error) {
-        console.error("Failed to fetch user data", error);
-      }
-    };
-    fetchUser();
-  }, []);
+  const calculateCompletion = (user) => {
+    if (!user) return 0;
+    const fields = ['username', 'email', 'age', 'phone', 'location', 'gender', 'avatar_url'];
+    const filledFields = fields.filter(field => user[field] && String(user[field]).trim() !== '');
+    return Math.round((filledFields.length / fields.length) * 100);
+  };
+
+  const completionPercentage = userData ? calculateCompletion(userData) : 0;
 
   const handleSave = async () => {
     setIsLoading(true);
     setSaveTrigger(prev => prev + 1);
     setTimeout(() => {
       setIsLoading(false);
+      // Refresh user data after save to update completion percentage
+      fetchUser();
     }, 1000);
   };
+
+  const fetchUser = async () => {
+    try {
+      const user = await getCurrentUser();
+      setUserData(user);
+    } catch (error) {
+      console.error("Failed to fetch user data", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchUser();
+  }, []);
 
   const tabs = [
     { 
@@ -223,11 +235,11 @@ const Settings = () => {
                     Completion
                   </div>
                   <div className="flex items-center space-x-3">
-                    <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400">85%</span>
+                    <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400">{completionPercentage}%</span>
                     <div className="w-20 bg-gray-200 dark:bg-gray-700/50 rounded-full h-1.5 overflow-hidden">
                       <div 
                         className="h-full bg-gradient-to-r from-indigo-500 to-purple-600 transition-all duration-1000"
-                        style={{ width: '85%' }}
+                        style={{ width: `${completionPercentage}%` }}
                       />
                     </div>
                   </div>

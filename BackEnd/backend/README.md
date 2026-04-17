@@ -3,12 +3,31 @@
 ## Overview
 This backend is built with **FastAPI** and **MongoDB** to power an AI-based children's speech therapy application with regional language support.
 
+## 🧠 Algorithm Workflow
+
+All speech and video analysis functions use **centralized scoring algorithms** for consistency and maintainability.
+
+### Key Components:
+- **Centralized Algorithms**: `src/utils/scoring_algorithms.py`
+- **Speech Analysis**: `src/services/speech_analyzer.py`
+- **Video Analysis**: `src/services/video_analyzer.py`
+
+### Analysis Workflow:
+1. **Audio Processing** → Feature Extraction
+2. **Pitch Analysis** → Algorithmic scoring (ideal range: 20-40 Hz variation)
+3. **Fluency Analysis** → Pause detection and rhythm scoring
+4. **Phoneme Analysis** → Character-level or ML-based comparison
+5. **Overall Score** → Weighted combination (50% pronunciation, 20% confidence, 20% fluency, 10% pitch)
+
+📖 **Full Documentation**: See [ALGORITHM_WORKFLOW.md](./ALGORITHM_WORKFLOW.md) for detailed workflow diagrams and algorithm explanations.
+
 ## 🛠️ Technology Stack
 - **Framework**: FastAPI 0.104.1
 - **Database**: MongoDB with Motor (async driver) & Beanie ODM
 - **Authentication**: JWT with OAuth2
 - **AI/ML**: PyTorch, Transformers (Wav2Vec2), Librosa
 - **Language Support**: English, Tamil, Hindi, Telugu
+- **Scoring System**: Centralized algorithmic scoring for consistency
 
 ## 📋 Prerequisites
 - Python 3.8+

@@ -1,12 +1,40 @@
-//src/components/common/Header.jsx
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Bell, Search, User, Sun, Moon, SearchIcon } from 'lucide-react'
+import { Bell, Search, User, Sun, Moon } from 'lucide-react'
 import { useTheme } from '../../context/ThemeContext'
+import { getCurrentUser } from '../../services/api'
 
 const Header = () => {
   const navigate = useNavigate();
   const { darkMode, toggleDarkMode } = useTheme();
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const userData = await getCurrentUser();
+        setUser(userData);
+      } catch (error) {
+        console.error("Failed to fetch user in header:", error);
+      }
+    };
+    fetchUser();
+    
+    // Listen for profile updates
+    const handleProfileUpdate = () => fetchUser();
+    window.addEventListener('profileUpdated', handleProfileUpdate);
+    return () => window.removeEventListener('profileUpdated', handleProfileUpdate);
+  }, []);
+
+  const getInitials = (name) => {
+    if (!name) return '??';
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .substring(0, 2);
+  };
 
   return (
     <header className="h-16 md:h-20 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 sticky top-0 z-40 transition-all duration-300">
@@ -56,14 +84,26 @@ const Header = () => {
             className="flex items-center gap-3 p-1.5 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 border border-transparent hover:border-gray-200 dark:hover:border-gray-700"
           >
             <div className="relative">
-              <div className="w-9 h-9 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-md">
-                BK
-              </div>
+              {user?.avatar_url ? (
+                <img 
+                  src={user.avatar_url} 
+                  alt="Avatar" 
+                  className="w-9 h-9 rounded-lg object-cover shadow-md"
+                />
+              ) : (
+                <div className="w-9 h-9 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-md">
+                  {getInitials(user?.username || 'User')}
+                </div>
+              )}
               <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 border-2 border-white dark:border-gray-900 rounded-full"></div>
             </div>
             <div className="hidden lg:block text-left">
-              <p className="text-sm font-bold text-gray-900 dark:text-white leading-none">Bala Kumar</p>
-              <p className="text-[10px] text-gray-500 font-medium mt-1 uppercase tracking-wider">Premium Plan</p>
+              <p className="text-sm font-bold text-gray-900 dark:text-white leading-none">
+                {user?.username || 'Learner'}
+              </p>
+              <p className="text-[10px] text-gray-500 font-medium mt-1 uppercase tracking-wider">
+                {user?.role === 'admin' ? 'Admin' : 'Premium Plan'}
+              </p>
             </div>
           </button>
         </div>

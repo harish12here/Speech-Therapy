@@ -157,6 +157,9 @@ const ProfileSettings = ({ saveTrigger, onSaveComplete }) => {
       });
       window.dispatchEvent(successEvent);
       
+      // Dispatch profileUpdated event for other components like Header
+      window.dispatchEvent(new CustomEvent('profileUpdated'));
+      
       if (onSaveComplete) onSaveComplete();
     } catch (err) {
       console.error("Failed to update profile", err);

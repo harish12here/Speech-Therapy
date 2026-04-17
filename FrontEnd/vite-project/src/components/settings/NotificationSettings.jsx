@@ -21,11 +21,19 @@ const NotificationSettings = ({ saveTrigger, onSaveComplete }) => {
     const fetchSettings = async () => {
       try {
         setLoading(true);
-        // Assuming we fetch from user profile or a dedicated settings endpoint
         const user = await getCurrentUser();
         if (user) {
-          // Map user preferences if they exist in the backend
-          // setSettings(user.notification_preferences || settings);
+          setSettings({
+            pushNotifications: user.push_notifications ?? true,
+            emailNotifications: user.email_notifications ?? true,
+            smsNotifications: user.sms_notifications || false,
+            sessionReminders: user.session_reminders ?? true,
+            achievementAlerts: user.achievement_alerts ?? true,
+            weeklyReports: user.weekly_report ?? true,
+            activityAlerts: user.practice_reminders ?? true,
+            reminderLeadTime: user.reminder_lead_time ? String(user.reminder_lead_time) : '15',
+            marketingEmails: false // Not in backend yet
+          });
         }
       } catch (err) {
         console.error("Failed to fetch notification settings", err);
@@ -44,8 +52,16 @@ const NotificationSettings = ({ saveTrigger, onSaveComplete }) => {
 
   const handleSave = async () => {
     try {
-      // In a real app, you'd send this to the backend
-      // await updateNotificationSettings(settings);
+      await updateUserProfile({
+        push_notifications: settings.pushNotifications,
+        email_notifications: settings.emailNotifications,
+        sms_notifications: settings.smsNotifications,
+        session_reminders: settings.sessionReminders,
+        achievement_alerts: settings.achievementAlerts,
+        weekly_report: settings.weeklyReports,
+        practice_reminders: settings.activityAlerts,
+        reminder_lead_time: parseInt(settings.reminderLeadTime)
+      });
       
       const successEvent = new CustomEvent('showNotification', {
         detail: { 
@@ -58,6 +74,14 @@ const NotificationSettings = ({ saveTrigger, onSaveComplete }) => {
       if (onSaveComplete) onSaveComplete();
     } catch (err) {
       console.error("Failed to save notification settings", err);
+      const errorEvent = new CustomEvent('showNotification', {
+        detail: { 
+          message: 'Failed to update notification settings', 
+          type: 'error' 
+        }
+      });
+      window.dispatchEvent(errorEvent);
+      if (onSaveComplete) onSaveComplete();
     }
   };
 

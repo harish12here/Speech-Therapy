@@ -1,7 +1,7 @@
 //src/components/pages/Dashboard.jsx
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Play, Award, TrendingUp, Clock, Activity, BarChart3, User, Video } from 'lucide-react'
+import { Play, Award, TrendingUp, Clock, Activity, BarChart3, User, Video, RefreshCw, AlertCircle } from 'lucide-react'
 import SessionStartModal from '../common/SessionStartModal'
 import { getCurrentUser, getProgressStats, getSessionHistory, getRecommendations } from '../../services/api'
 
@@ -10,6 +10,8 @@ const Dashboard = () => {
   const [user, setUser] = useState(null);
   const [isSessionModalOpen, setIsSessionModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
   const [stats, setStats] = useState({
     completed_exercises: 0,
     total_points: 0,
@@ -19,39 +21,74 @@ const Dashboard = () => {
   });
   const [recommendations, setRecommendations] = useState([]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
+  // Fetch all dashboard data
+  const fetchData = async (isRefresh = false) => {
+    try {
+      if (isRefresh) {
+        setRefreshing(true);
+      } else {
         setLoading(true);
-        const [userData, progressData, historyData, recsData] = await Promise.all([
-          getCurrentUser(),
-          getProgressStats(),
-          getSessionHistory(),
-          getRecommendations()
-        ]);
-        
-        setUser(userData);
-        setStats({
-          completed_exercises: progressData.exercises_completed || 0,
-          total_points: progressData.total_points || 0,
-          current_streak: progressData.current_streak || 0,
-          total_duration: progressData.total_duration || 0,
-          recent_activity: historyData.map(s => ({
-            type: s.overall_score > 80 ? 'achievement' : 'improvement',
-            title: s.exercise_id ? 'Exercise Completed' : 'Practice Session',
-            desc: `Scored ${Math.round(s.overall_score || 0)}% accuracy`,
-            time: s.timestamp
-          }))
-        });
-        setRecommendations(recsData);
-      } catch (error) {
-        console.error('Failed to fetch dashboard data:', error);
-      } finally {
-        setLoading(false);
       }
-    };
+      setError(null);
+
+      // Fetch all data in parallel for better performance
+      const [userData, progressData, historyData, recsData] = await Promise.all([
+        getCurrentUser(),
+        getProgressStats(),
+        getSessionHistory(),
+        getRecommendations()
+      ]);
+      
+      setUser(userData);
+      
+      // Process stats data
+      setStats({
+        completed_exercises: progressData.exercises_completed || 0,
+        total_points: progressData.total_points || 0,
+        current_streak: progressData.current_streak || 0,
+        total_duration: Math.round(progressData.total_duration || 0),
+        recent_activity: historyData.slice(0, 5).map(s => ({
+          type: s.overall_score > 80 ? 'achievement' : 'improvement',
+          title: s.exercise_id ? 'Exercise Completed' : 'Practice Session',
+          desc: `Scored ${Math.round(s.overall_score || 0)}% accuracy`,
+          time: s.timestamp,
+          score: s.overall_score
+        }))
+      });
+      
+      setRecommendations(recsData || []);
+    } catch (error) {
+      console.error('Failed to fetch dashboard data:', error);
+      setError(error.response?.data?.detail || 'Failed to load dashboard. Please try again.');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  // Initial data fetch
+  useEffect(() => {
     fetchData();
   }, []);
+
+  // Auto-refresh data every 2 minutes for real-time updates
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchData(true);
+    }, 120000); // 2 minutes
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Manual refresh handler
+  const handleRefresh = () => {
+    fetchData(true);
+  };
+
+  // Retry handler for errors
+  const handleRetry = () => {
+    fetchData();
+  };
 
   // Level Logic
   const level = Math.floor(stats.total_points / 500) + 1;
@@ -70,6 +107,27 @@ const Dashboard = () => {
     );
   }
 
+  // Error State
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50 rounded-2xl p-8 max-w-md mx-auto text-center">
+          <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="text-red-600 dark:text-red-400 w-8 h-8" />
+          </div>
+          <h3 className="text-xl font-bold text-red-800 dark:text-red-300 mb-2">Oops! Something went wrong</h3>
+          <p className="text-red-600 dark:text-red-400 mb-6">{error}</p>
+          <button
+            onClick={handleRetry}
+            className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <SessionStartModal 
@@ -77,12 +135,24 @@ const Dashboard = () => {
         onClose={() => setIsSessionModalOpen(false)} 
       />
       
-      {/* Welcome Section */}
-      <div className="mb-6 md:mb-8 text-center md:text-left px-2">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white leading-tight">
-          Good morning, {user?.username || 'Learner'}! 👋
-        </h1>
-        <p className="text-gray-500 dark:text-gray-400 mt-1 text-base md:text-lg">Ready for today's speech practice?</p>
+      {/* Welcome Section with Refresh Button */}
+      <div className="mb-6 md:mb-8 px-2">
+        <div className="flex items-center justify-between">
+          <div className="text-center md:text-left flex-1">
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white leading-tight">
+              Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}, {user?.username || 'Learner'}! 👋
+            </h1>
+            <p className="text-gray-500 dark:text-gray-400 mt-1 text-base md:text-lg">Ready for today's speech practice?</p>
+          </div>
+          <button
+            onClick={handleRefresh}
+            disabled={refreshing}
+            className="ml-4 p-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
+            title="Refresh data"
+          >
+            <RefreshCw className={`w-5 h-5 text-gray-600 dark:text-gray-400 ${refreshing ? 'animate-spin' : ''}`} />
+          </button>
+        </div>
       </div>
 
       {/* Stats Grid */}

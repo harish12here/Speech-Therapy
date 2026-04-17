@@ -1,28 +1,45 @@
-// src/components/settings/LanguageSelector.jsx
 import React, { useState, useEffect } from 'react';
 import { Globe, Check, Volume2, Download, Play, Pause } from 'lucide-react';
-import { getCurrentUser, updateUserProfile } from '../../services/api';
+import { getCurrentUser, updateUserProfile, getUserStats } from '../../services/api';
 
 const LanguageSelector = ({ saveTrigger, onSaveComplete }) => {
   const [selectedLanguage, setSelectedLanguage] = useState('ta');
   const [selectedInterfaceLang, setSelectedInterfaceLang] = useState('en');
   const [loading, setLoading] = useState(true);
   const [playingVoice, setPlayingVoice] = useState(null);
+  const [fluencyStats, setFluencyStats] = useState([]);
 
   useEffect(() => {
-    const fetchLanguages = async () => {
+    const fetchLanguageData = async () => {
       try {
         setLoading(true);
-        const user = await getCurrentUser();
+        const [user, stats] = await Promise.all([
+          getCurrentUser(),
+          getUserStats()
+        ]);
+        
         if (user.language_preference) setSelectedInterfaceLang(user.language_preference);
         if (user.regional_language) setSelectedLanguage(user.regional_language);
+        
+        // Map fluency stats from backend or use defaults
+        const backendFluency = stats.fluency_by_language || {};
+        const mappedStats = [
+          { lang: 'Tamil', code: 'ta', val: backendFluency.ta || 0, color: 'indigo' },
+          { lang: 'Hindi', code: 'hi', val: backendFluency.hi || 0, color: 'teal' },
+          { lang: 'English', code: 'en', val: backendFluency.en || 0, color: 'orange' },
+          { lang: 'Telugu', code: 'te', val: backendFluency.te || 0, color: 'rose' }
+        ];
+        
+        // If data is all 0 (new user), maybe show some placeholder but mark as dynamic
+        setFluencyStats(mappedStats);
+        
       } catch (err) {
         console.error("Failed to fetch language settings", err);
       } finally {
         setLoading(false);
       }
     };
-    fetchLanguages();
+    fetchLanguageData();
   }, []);
 
   useEffect(() => {
@@ -49,6 +66,14 @@ const LanguageSelector = ({ saveTrigger, onSaveComplete }) => {
       if (onSaveComplete) onSaveComplete();
     } catch (err) {
       console.error("Failed to save language settings", err);
+      const errorEvent = new CustomEvent('showNotification', {
+        detail: { 
+          message: 'Failed to update language settings', 
+          type: 'error' 
+        }
+      });
+      window.dispatchEvent(errorEvent);
+      if (onSaveComplete) onSaveComplete();
     }
   };
 
@@ -239,12 +264,7 @@ const LanguageSelector = ({ saveTrigger, onSaveComplete }) => {
         </div>
         
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {[
-            { lang: 'Tamil', val: 85, color: 'indigo' },
-            { lang: 'Hindi', val: 72, color: 'teal' },
-            { lang: 'English', val: 90, color: 'orange' },
-            { lang: 'Telugu', val: 45, color: 'rose' }
-          ].map((stat) => (
+          {fluencyStats.map((stat) => (
             <div key={stat.lang} className="bg-gradient-to-r from-gray-50 to-white dark:from-gray-700/50 dark:to-gray-800/30 p-4 rounded-xl border border-gray-200 dark:border-gray-600">
               <div className="text-sm font-semibold text-gray-900 dark:text-white mb-3">{stat.lang}</div>
               <div className="flex items-end space-x-2 mb-2">
